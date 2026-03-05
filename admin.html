@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard — Java ITS Reviewer</title>
+<style>
+  :root {
+    --primary: #1a73e8;
+    --success: #34a853;
+    --danger: #ea4335;
+    --warn: #fbbc04;
+    --bg: #f8f9fa;
+    --card: #fff;
+    --border: #dadce0;
+    --text: #202124;
+    --muted: #5f6368;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 15px; }
+
+  /* Login */
+  #login-screen {
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; padding: 24px;
+  }
+  .login-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 16px; padding: 40px 36px; max-width: 380px; width: 100%;
+    box-shadow: 0 4px 20px rgba(0,0,0,.1); text-align: center;
+  }
+  .login-card h1 { font-size: 1.6rem; margin-bottom: 6px; }
+  .login-card p { color: var(--muted); margin-bottom: 28px; }
+  .login-card input {
+    width: 100%; padding: 13px 16px; border: 2px solid var(--border);
+    border-radius: 10px; font-size: 1rem; margin-bottom: 12px; outline: none;
+    transition: border-color .2s;
+  }
+  .login-card input:focus { border-color: var(--primary); }
+  .login-card input.error { border-color: var(--danger); }
+  .login-error { color: var(--danger); font-size: .9rem; margin-bottom: 12px; display: none; }
+  .btn {
+    display: inline-block; padding: 13px 32px; border-radius: 10px;
+    border: none; cursor: pointer; font-size: 1rem; font-weight: 700;
+    transition: background .2s; width: 100%;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: #1557b0; }
+  .btn-secondary { background: #fff; color: var(--primary); border: 2px solid var(--primary); }
+  .btn-sm { width: auto; padding: 8px 18px; font-size: .9rem; }
+
+  /* Dashboard */
+  #dashboard { display: none; }
+  header {
+    background: var(--primary); color: #fff;
+    padding: 16px 28px; display: flex; align-items: center;
+    justify-content: space-between; box-shadow: 0 2px 8px rgba(0,0,0,.2);
+  }
+  header h1 { font-size: 1.25rem; font-weight: 700; }
+  header .logout { font-size: .9rem; opacity: .85; cursor: pointer; background: none; border: none; color: #fff; font-weight: 600; }
+  header .logout:hover { opacity: 1; text-decoration: underline; }
+
+  main { max-width: 1100px; margin: 0 auto; padding: 28px 20px; }
+
+  /* Stats row */
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+  .stat-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px 24px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .stat-card .label { font-size: .8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 6px; }
+  .stat-card .value { font-size: 2rem; font-weight: 700; color: var(--primary); }
+  .stat-card .sub { font-size: .85rem; color: var(--muted); margin-top: 2px; }
+
+  /* Table section */
+  .section-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px; flex-wrap: wrap; gap: 10px;
+  }
+  .section-header h2 { font-size: 1.15rem; font-weight: 700; }
+  .refresh-note { font-size: .85rem; color: var(--muted); }
+
+  .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.06); overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 600px; }
+  thead th {
+    background: #f1f3f4; padding: 12px 16px;
+    font-size: .85rem; font-weight: 700; text-align: left;
+    border-bottom: 2px solid var(--border); white-space: nowrap;
+  }
+  tbody td { padding: 13px 16px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover td { background: #fafcff; }
+
+  .badge-flag { background: #fce8e6; color: var(--danger); font-weight: 700; font-size: .8rem; padding: 3px 10px; border-radius: 20px; }
+  .badge-ok { background: #e6f4ea; color: var(--success); font-size: .8rem; padding: 3px 10px; border-radius: 20px; }
+  .score-bar-wrap { display: flex; align-items: center; gap: 10px; }
+  .score-bar { height: 8px; border-radius: 4px; background: #e8f0fe; flex: 1; min-width: 60px; }
+  .score-bar-fill { height: 100%; border-radius: 4px; background: var(--primary); transition: width .4s; }
+  .score-bar-fill.low { background: var(--danger); }
+  .score-bar-fill.mid { background: var(--warn); }
+  .score-bar-fill.high { background: var(--success); }
+
+  .empty-state { text-align: center; padding: 48px 24px; color: var(--muted); }
+  .empty-state p { font-size: 1.05rem; }
+
+  #auto-refresh-label { font-size: .8rem; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <h1>Teacher Dashboard</h1>
+    <p>Java ITS Reviewer — Admin Access</p>
+    <input type="password" id="pwd-input" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')login()">
+    <div class="login-error" id="login-error">Incorrect password. Try again.</div>
+    <button class="btn btn-primary" onclick="login()">Sign In</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <header>
+    <h1>Teacher Dashboard — Java ITS Reviewer</h1>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <span id="auto-refresh-label"></span>
+      <button class="logout" onclick="logout()">Sign Out</button>
+    </div>
+  </header>
+  <main>
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="label">Total Submissions</div>
+        <div class="value" id="stat-total">0</div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Class Average</div>
+        <div class="value" id="stat-avg">—</div>
+        <div class="sub" id="stat-avg-sub"></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Highest Score</div>
+        <div class="value" id="stat-high">—</div>
+        <div class="sub" id="stat-high-name"></div>
+      </div>
+      <div class="stat-card">
+        <div class="label">Flagged</div>
+        <div class="value" id="stat-flag" style="color:var(--danger)">0</div>
+        <div class="sub">3+ tab violations</div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="section-header">
+      <h2>Student Submissions</h2>
+      <div style="display:flex;gap:10px;align-items:center;">
+        <span class="refresh-note" id="last-refresh"></span>
+        <button class="btn btn-secondary btn-sm" onclick="loadScores()">Refresh</button>
+        <button class="btn btn-primary btn-sm" onclick="exportCSV()">Download CSV</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Score</th>
+            <th>Percent</th>
+            <th>Violations</th>
+            <th>Status</th>
+            <th>Submitted</th>
+          </tr>
+        </thead>
+        <tbody id="scores-tbody"></tbody>
+      </table>
+      <div class="empty-state" id="empty-state" style="display:none;">
+        <p>No submissions yet. Scores will appear here once students submit.</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+const ADMIN_PASSWORD = 'Ri4QhiFAWQ3xIHwD';
+const REFRESH_INTERVAL = 15000; // auto-refresh every 15 seconds
+let refreshTimer = null;
+let allScores = [];
+
+function login() {
+  const pwd = document.getElementById('pwd-input').value;
+  const err = document.getElementById('login-error');
+  if (pwd === ADMIN_PASSWORD) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadScores();
+    startAutoRefresh();
+  } else {
+    err.style.display = 'block';
+    document.getElementById('pwd-input').classList.add('error');
+    document.getElementById('pwd-input').value = '';
+    document.getElementById('pwd-input').focus();
+  }
+}
+
+function logout() {
+  stopAutoRefresh();
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('pwd-input').value = '';
+  document.getElementById('login-error').style.display = 'none';
+}
+
+function startAutoRefresh() {
+  let secs = REFRESH_INTERVAL / 1000;
+  updateRefreshLabel(secs);
+  refreshTimer = setInterval(() => {
+    secs--;
+    updateRefreshLabel(secs);
+    if (secs <= 0) {
+      loadScores();
+      secs = REFRESH_INTERVAL / 1000;
+    }
+  }, 1000);
+}
+
+function updateRefreshLabel(secs) {
+  document.getElementById('auto-refresh-label').textContent = `Auto-refresh in ${secs}s`;
+}
+
+function stopAutoRefresh() {
+  if (refreshTimer) clearInterval(refreshTimer);
+}
+
+async function loadScores() {
+  try {
+    const res = await fetch('/scores-data');
+    if (!res.ok) throw new Error('not ok');
+    allScores = await res.json();
+    renderTable(allScores);
+    renderStats(allScores);
+    document.getElementById('last-refresh').textContent =
+      'Last updated: ' + new Date().toLocaleTimeString();
+  } catch(e) {
+    document.getElementById('last-refresh').textContent = 'Could not load scores.';
+  }
+}
+
+function renderStats(scores) {
+  document.getElementById('stat-total').textContent = scores.length;
+  if (scores.length === 0) return;
+
+  const percents = scores.map(s => parseFloat(s.Percent));
+  const avg = percents.reduce((a,b) => a+b, 0) / percents.length;
+  document.getElementById('stat-avg').textContent = Math.round(avg) + '%';
+  document.getElementById('stat-avg-sub').textContent = `${scores.length} student${scores.length>1?'s':''}`;
+
+  const maxIdx = percents.indexOf(Math.max(...percents));
+  document.getElementById('stat-high').textContent = scores[maxIdx].Percent;
+  document.getElementById('stat-high-name').textContent = scores[maxIdx].Name;
+
+  const flagged = scores.filter(s => s.Flagged === 'YES').length;
+  document.getElementById('stat-flag').textContent = flagged;
+}
+
+function renderTable(scores) {
+  const tbody = document.getElementById('scores-tbody');
+  const empty = document.getElementById('empty-state');
+  if (scores.length === 0) {
+    tbody.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+
+  tbody.innerHTML = scores.map((s, i) => {
+    const pct = parseFloat(s.Percent) || 0;
+    const barClass = pct >= 75 ? 'high' : pct >= 60 ? 'mid' : 'low';
+    const flagged = s.Flagged === 'YES';
+    const viols = parseInt(s.Violations) || 0;
+    return `<tr>
+      <td style="color:var(--muted);font-size:.9rem;">${i+1}</td>
+      <td style="font-weight:600;">${esc(s.Name)}</td>
+      <td>
+        <div class="score-bar-wrap">
+          <span style="font-weight:700;min-width:52px;">${esc(s.Score)}/${esc(s.Total)}</span>
+          <div class="score-bar"><div class="score-bar-fill ${barClass}" style="width:${pct}%"></div></div>
+        </div>
+      </td>
+      <td style="font-weight:700;color:${pct>=75?'var(--success)':pct>=60?'#b06000':'var(--danger)'};">${esc(s.Percent)}</td>
+      <td style="text-align:center;color:${viols>0?'var(--danger)':'var(--muted)'};">${viols}</td>
+      <td>${flagged ? '<span class="badge-flag">⚠ FLAGGED</span>' : '<span class="badge-ok">OK</span>'}</td>
+      <td style="color:var(--muted);font-size:.88rem;">${esc(s.Timestamp)}</td>
+    </tr>`;
+  }).join('');
+}
+
+function exportCSV() {
+  window.location.href = '/scores-download';
+}
+
+function esc(v) {
+  return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+document.getElementById('pwd-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') login();
+});
+</script>
+</body>
+</html>
