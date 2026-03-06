@@ -14,6 +14,16 @@ from datetime import datetime, timezone
 from flask import Flask, request, jsonify, send_from_directory, Response
 import requests as http_requests
 
+# Load .env file if present (for local development)
+_env_path = os.path.join(os.path.dirname(__file__), ".env")
+if os.path.exists(_env_path):
+    with open(_env_path) as _f:
+        for _line in _f:
+            _line = _line.strip()
+            if _line and not _line.startswith("#") and "=" in _line:
+                _k, _v = _line.split("=", 1)
+                os.environ.setdefault(_k.strip(), _v.strip())
+
 app = Flask(__name__, static_folder=os.path.dirname(__file__))
 
 # ── Supabase config (set these in Render environment variables) ──
@@ -56,6 +66,7 @@ def submit():
     total      = int(data.get("total", 0))
     percent    = str(data.get("percent", "0%"))
     violations = int(data.get("violations", 0))
+    batch      = str(data.get("batch", "Unknown"))
     flagged    = violations >= 3
     timestamp  = datetime.now(timezone.utc).isoformat()
 
@@ -67,6 +78,7 @@ def submit():
         "percent":    percent,
         "violations": violations,
         "flagged":    flagged,
+        "batch":      batch,
     }
 
     try:
@@ -78,7 +90,7 @@ def submit():
         )
         resp.raise_for_status()
         flag_note = " ⚠ FLAGGED" if flagged else ""
-        print(f"  Saved: {name} — {score}/{total} ({percent}) | violations: {violations}{flag_note}")
+        print(f"  Saved: {name} [{batch}] — {score}/{total} ({percent}) | violations: {violations}{flag_note}")
         return jsonify({"ok": True}), 200
     except Exception as e:
         print(f"  ERROR saving score: {e}")
@@ -100,6 +112,7 @@ def scores_data():
             {
                 "Timestamp":  r.get("timestamp", ""),
                 "Name":       r.get("name", ""),
+                "Batch":      r.get("batch", ""),
                 "Score":      r.get("score", 0),
                 "Total":      r.get("total", 0),
                 "Percent":    r.get("percent", "0%"),
@@ -116,6 +129,7 @@ def scores_data():
 @app.route("/scores-download")
 def scores_download():
     try:
+        batch_filter = request.args.get("batch", "")
         resp = http_requests.get(
             f"{SUPABASE_URL}/rest/v1/{TABLE}?select=*&order=timestamp.desc",
             headers={**supabase_headers(), "Prefer": ""},
@@ -124,11 +138,16 @@ def scores_download():
         resp.raise_for_status()
         rows = resp.json()
 
-        lines = ["Timestamp,Name,Score,Total,Percent,Violations,Flagged"]
+        if batch_filter:
+            rows = [r for r in rows if r.get("batch", "") == batch_filter]
+
+        filename = f"scores_{batch_filter.replace(' ', '_')}.csv" if batch_filter else "scores.csv"
+        lines = ["Timestamp,Name,Batch,Score,Total,Percent,Violations,Flagged"]
         for r in rows:
             lines.append(",".join([
                 r.get("timestamp", ""),
                 f'"{r.get("name","")}"',
+                r.get("batch", ""),
                 str(r.get("score", 0)),
                 str(r.get("total", 0)),
                 r.get("percent", "0%"),
@@ -140,7 +159,7 @@ def scores_download():
         return Response(
             csv_text,
             mimetype="text/csv",
-            headers={"Content-Disposition": "attachment; filename=scores.csv"},
+            headers={"Content-Disposition": f"attachment; filename={filename}"},
         )
     except Exception as e:
         return jsonify({"error": str(e)}), 500

@@ -60,7 +60,7 @@
   header .logout { font-size: .9rem; opacity: .85; cursor: pointer; background: none; border: none; color: #fff; font-weight: 600; }
   header .logout:hover { opacity: 1; text-decoration: underline; }
 
-  main { max-width: 1100px; margin: 0 auto; padding: 28px 20px; }
+  main { max-width: 1200px; margin: 0 auto; padding: 28px 20px; }
 
   /* Stats row */
   .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
@@ -73,6 +73,29 @@
   .stat-card .value { font-size: 2rem; font-weight: 700; color: var(--primary); }
   .stat-card .sub { font-size: .85rem; color: var(--muted); margin-top: 2px; }
 
+  /* Filter bar */
+  .filter-bar {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 18px; margin-bottom: 20px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .filter-bar label { font-size: .9rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+  .filter-bar select {
+    padding: 8px 14px; border: 2px solid var(--border); border-radius: 8px;
+    font-size: .9rem; font-weight: 600; color: var(--text);
+    background: var(--bg); cursor: pointer; outline: none;
+    transition: border-color .2s;
+  }
+  .filter-bar select:focus { border-color: var(--primary); }
+  .batch-count { font-size: .85rem; color: var(--muted); margin-left: auto; }
+
+  /* Batch badges */
+  .badge-batch1 { background: #e8f0fe; color: #1a73e8; font-size: .78rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+  .badge-batch2 { background: #fce8ff; color: #8a2be2; font-size: .78rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+  .badge-batch3 { background: #e6f4ea; color: #1e7e34; font-size: .78rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+  .badge-batchx { background: #f1f3f4; color: var(--muted); font-size: .78rem; font-weight: 700; padding: 3px 9px; border-radius: 20px; white-space: nowrap; }
+
   /* Table section */
   .section-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -82,7 +105,7 @@
   .refresh-note { font-size: .85rem; color: var(--muted); }
 
   .table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,.06); overflow-x: auto; }
-  table { width: 100%; border-collapse: collapse; min-width: 600px; }
+  table { width: 100%; border-collapse: collapse; min-width: 680px; }
   thead th {
     background: #f1f3f4; padding: 12px 16px;
     font-size: .85rem; font-weight: 700; text-align: left;
@@ -135,6 +158,7 @@
       <div class="stat-card">
         <div class="label">Total Submissions</div>
         <div class="value" id="stat-total">0</div>
+        <div class="sub" id="stat-total-sub"></div>
       </div>
       <div class="stat-card">
         <div class="label">Class Average</div>
@@ -153,6 +177,18 @@
       </div>
     </div>
 
+    <!-- Batch Filter -->
+    <div class="filter-bar">
+      <label for="batch-filter">Filter by Batch:</label>
+      <select id="batch-filter" onchange="applyFilter()">
+        <option value="all">All Batches</option>
+        <option value="Batch 1">Batch 1</option>
+        <option value="Batch 2">Batch 2</option>
+        <option value="Batch 3">Batch 3</option>
+      </select>
+      <span class="batch-count" id="batch-count"></span>
+    </div>
+
     <!-- Table -->
     <div class="section-header">
       <h2>Student Submissions</h2>
@@ -168,6 +204,7 @@
           <tr>
             <th>#</th>
             <th>Name</th>
+            <th>Batch</th>
             <th>Score</th>
             <th>Percent</th>
             <th>Violations</th>
@@ -186,7 +223,7 @@
 
 <script>
 const ADMIN_PASSWORD = 'Ri4QhiFAWQ3xIHwD';
-const REFRESH_INTERVAL = 15000; // auto-refresh every 15 seconds
+const REFRESH_INTERVAL = 15000;
 let refreshTimer = null;
 let allScores = [];
 
@@ -240,8 +277,7 @@ async function loadScores() {
     const res = await fetch('/scores-data');
     if (!res.ok) throw new Error('not ok');
     allScores = await res.json();
-    renderTable(allScores);
-    renderStats(allScores);
+    applyFilter();
     document.getElementById('last-refresh').textContent =
       'Last updated: ' + new Date().toLocaleTimeString();
   } catch(e) {
@@ -249,14 +285,42 @@ async function loadScores() {
   }
 }
 
+function applyFilter() {
+  const batch = document.getElementById('batch-filter').value;
+  const filtered = batch === 'all' ? allScores : allScores.filter(s => s.Batch === batch);
+  renderTable(filtered);
+  renderStats(filtered);
+
+  // Batch count label
+  const countEl = document.getElementById('batch-count');
+  if (batch === 'all') {
+    // Show per-batch breakdown
+    const counts = {};
+    allScores.forEach(s => { const b = s.Batch || 'Unknown'; counts[b] = (counts[b] || 0) + 1; });
+    countEl.textContent = Object.entries(counts).map(([b, n]) => `${b}: ${n}`).join(' · ');
+  } else {
+    countEl.textContent = `${filtered.length} submission${filtered.length !== 1 ? 's' : ''}`;
+  }
+}
+
 function renderStats(scores) {
+  const batch = document.getElementById('batch-filter').value;
   document.getElementById('stat-total').textContent = scores.length;
-  if (scores.length === 0) return;
+  document.getElementById('stat-total-sub').textContent = batch === 'all' ? 'all batches' : batch;
+
+  if (scores.length === 0) {
+    document.getElementById('stat-avg').textContent = '—';
+    document.getElementById('stat-avg-sub').textContent = '';
+    document.getElementById('stat-high').textContent = '—';
+    document.getElementById('stat-high-name').textContent = '';
+    document.getElementById('stat-flag').textContent = '0';
+    return;
+  }
 
   const percents = scores.map(s => parseFloat(s.Percent));
-  const avg = percents.reduce((a,b) => a+b, 0) / percents.length;
+  const avg = percents.reduce((a, b) => a + b, 0) / percents.length;
   document.getElementById('stat-avg').textContent = Math.round(avg) + '%';
-  document.getElementById('stat-avg-sub').textContent = `${scores.length} student${scores.length>1?'s':''}`;
+  document.getElementById('stat-avg-sub').textContent = `${scores.length} student${scores.length > 1 ? 's' : ''}`;
 
   const maxIdx = percents.indexOf(Math.max(...percents));
   document.getElementById('stat-high').textContent = scores[maxIdx].Percent;
@@ -281,17 +345,23 @@ function renderTable(scores) {
     const barClass = pct >= 75 ? 'high' : pct >= 60 ? 'mid' : 'low';
     const flagged = s.Flagged === 'YES';
     const viols = parseInt(s.Violations) || 0;
+    const batch = s.Batch || '';
+    const batchBadgeClass = batch === 'Batch 1' ? 'badge-batch1'
+                          : batch === 'Batch 2' ? 'badge-batch2'
+                          : batch === 'Batch 3' ? 'badge-batch3'
+                          : 'badge-batchx';
     return `<tr>
-      <td style="color:var(--muted);font-size:.9rem;">${i+1}</td>
+      <td style="color:var(--muted);font-size:.9rem;">${i + 1}</td>
       <td style="font-weight:600;">${esc(s.Name)}</td>
+      <td><span class="${batchBadgeClass}">${esc(batch) || '—'}</span></td>
       <td>
         <div class="score-bar-wrap">
           <span style="font-weight:700;min-width:52px;">${esc(s.Score)}/${esc(s.Total)}</span>
           <div class="score-bar"><div class="score-bar-fill ${barClass}" style="width:${pct}%"></div></div>
         </div>
       </td>
-      <td style="font-weight:700;color:${pct>=75?'var(--success)':pct>=60?'#b06000':'var(--danger)'};">${esc(s.Percent)}</td>
-      <td style="text-align:center;color:${viols>0?'var(--danger)':'var(--muted)'};">${viols}</td>
+      <td style="font-weight:700;color:${pct >= 75 ? 'var(--success)' : pct >= 60 ? '#b06000' : 'var(--danger)'};">${esc(s.Percent)}</td>
+      <td style="text-align:center;color:${viols > 0 ? 'var(--danger)' : 'var(--muted)'};">${viols}</td>
       <td>${flagged ? '<span class="badge-flag">⚠ FLAGGED</span>' : '<span class="badge-ok">OK</span>'}</td>
       <td style="color:var(--muted);font-size:.88rem;">${esc(s.Timestamp)}</td>
     </tr>`;
@@ -299,11 +369,13 @@ function renderTable(scores) {
 }
 
 function exportCSV() {
-  window.location.href = '/scores-download';
+  const batch = document.getElementById('batch-filter').value;
+  const url = batch === 'all' ? '/scores-download' : `/scores-download?batch=${encodeURIComponent(batch)}`;
+  window.location.href = url;
 }
 
 function esc(v) {
-  return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  return String(v || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 document.getElementById('pwd-input').addEventListener('keydown', e => {

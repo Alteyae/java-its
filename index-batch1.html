@@ -1,0 +1,2332 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>Java ITS Reviewer — 50 Questions</title>
+    <style>
+      :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --success: #34a853;
+        --danger: #ea4335;
+        --warn: #fbbc04;
+        --bg: #f8f9fa;
+        --card: #ffffff;
+        --border: #dadce0;
+        --text: #202124;
+        --muted: #5f6368;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Segoe UI", system-ui, sans-serif;
+        font-size: 17px;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+      }
+      header {
+        background: var(--primary);
+        color: #fff;
+        padding: 18px 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      }
+      header h1 {
+        font-size: 1.35rem;
+        font-weight: 700;
+      }
+      #progress-bar-wrap {
+        width: 100%;
+        height: 5px;
+        background: rgba(255, 255, 255, 0.3);
+        position: absolute;
+        bottom: 0;
+        left: 0;
+      }
+      #progress-bar {
+        height: 100%;
+        background: #fff;
+        transition: width 0.3s;
+      }
+      #q-counter {
+        font-size: 1rem;
+        opacity: 0.9;
+        white-space: nowrap;
+        margin-left: 16px;
+        font-weight: 600;
+      }
+
+      main {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 32px 20px 100px;
+      }
+
+      /* Screens */
+      .screen {
+        display: none;
+      }
+      .screen.active {
+        display: block;
+      }
+
+      /* Start screen */
+      #screen-start {
+        text-align: center;
+        padding-top: 48px;
+      }
+      #screen-start h2 {
+        font-size: 2.4rem;
+        margin-bottom: 10px;
+        font-weight: 700;
+      }
+      #screen-start p {
+        color: var(--muted);
+        margin-bottom: 28px;
+        font-size: 1.15rem;
+        line-height: 1.6;
+      }
+      .name-input-wrap {
+        margin: 0 auto 28px;
+        max-width: 380px;
+        text-align: left;
+      }
+      .name-input-wrap label {
+        display: block;
+        font-weight: 700;
+        margin-bottom: 8px;
+        font-size: 1rem;
+        color: var(--text);
+      }
+      .name-input-wrap input {
+        width: 100%;
+        padding: 14px 16px;
+        border: 2px solid var(--border);
+        border-radius: 10px;
+        font-size: 1.05rem;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .name-input-wrap input:focus {
+        border-color: var(--primary);
+      }
+      .name-input-wrap input.error {
+        border-color: var(--danger);
+      }
+      .name-error {
+        color: var(--danger);
+        font-size: 0.9rem;
+        margin-top: 5px;
+        display: none;
+      }
+      .btn {
+        display: inline-block;
+        padding: 14px 36px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        font-size: 1.05rem;
+        font-weight: 700;
+        transition:
+          background 0.2s,
+          transform 0.1s;
+      }
+      .btn:active {
+        transform: scale(0.97);
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: var(--primary-dark);
+      }
+      .btn-secondary {
+        background: #fff;
+        color: var(--primary);
+        border: 2px solid var(--primary);
+      }
+
+      /* Question card */
+      .q-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 28px 32px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+      }
+      .q-label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 10px;
+      }
+      .q-text {
+        font-size: 1.08rem;
+        line-height: 1.7;
+        margin-bottom: 20px;
+      }
+      pre,
+      code {
+        font-family: "Courier New", monospace;
+        font-size: 0.95rem;
+        background: #f1f3f4;
+        border-radius: 8px;
+      }
+      pre {
+        padding: 16px 20px;
+        overflow-x: auto;
+        white-space: pre;
+        margin: 14px 0;
+        line-height: 1.6;
+      }
+      code {
+        padding: 3px 6px;
+      }
+
+      /* Multiple choice */
+      .mc-option {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 16px 20px;
+        border: 2px solid var(--border);
+        border-radius: 10px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
+        user-select: none;
+        font-size: 1.05rem;
+      }
+      .mc-option:hover {
+        border-color: var(--primary);
+        background: #f0f6ff;
+      }
+      .mc-option.selected {
+        border-color: var(--primary);
+        background: #e8f0fe;
+      }
+      .mc-option input[type="radio"] {
+        margin-top: 3px;
+        accent-color: var(--primary);
+        width: 18px;
+        height: 18px;
+      }
+      .mc-label {
+        font-weight: 700;
+        color: var(--primary);
+        min-width: 24px;
+        font-size: 1.05rem;
+      }
+
+      /* Table-based (Yes/No, True/False) */
+      .tf-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+      .tf-table th {
+        background: #f1f3f4;
+        padding: 12px 14px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-align: center;
+        border: 1px solid var(--border);
+      }
+      .tf-table th:first-child {
+        text-align: left;
+      }
+      .tf-table td {
+        padding: 13px 14px;
+        border: 1px solid var(--border);
+        vertical-align: middle;
+        font-size: 1rem;
+        line-height: 1.5;
+      }
+      .tf-table td:not(:first-child) {
+        text-align: center;
+      }
+      .tf-table tr:hover td {
+        background: #fafafa;
+      }
+      .tf-table input[type="radio"] {
+        accent-color: var(--primary);
+        width: 22px;
+        height: 22px;
+        cursor: pointer;
+      }
+
+      /* Dropdown fill-in */
+      .code-block-fill {
+        font-family: "Courier New", monospace;
+        font-size: 0.95rem;
+        background: #f1f3f4;
+        border-radius: 8px;
+        padding: 16px 20px;
+        line-height: 2;
+        overflow-x: auto;
+      }
+      select.fill-select {
+        font-family: "Courier New", monospace;
+        font-size: 0.93rem;
+        padding: 4px 8px;
+        border: 2px solid var(--primary);
+        border-radius: 6px;
+        background: #fff;
+        color: var(--text);
+        cursor: pointer;
+        max-width: 280px;
+      }
+
+      /* Nav */
+      #nav-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border-top: 1px solid var(--border);
+        padding: 14px 28px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 100;
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+      }
+      #nav-bar.hidden {
+        display: none;
+      }
+      #btn-prev {
+        background: #f1f3f4;
+        color: var(--text);
+      }
+      #btn-prev:hover {
+        background: #e8eaed;
+      }
+      #btn-next {
+        min-width: 120px;
+      }
+
+      /* Results */
+      #screen-results {
+        text-align: center;
+      }
+      .score-circle {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        margin: 24px auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.4rem;
+        font-weight: 700;
+        color: #fff;
+      }
+      .score-circle small {
+        font-size: 0.9rem;
+        font-weight: 400;
+      }
+      .grade-A {
+        background: var(--success);
+      }
+      .grade-B {
+        background: #34a853cc;
+      }
+      .grade-C {
+        background: var(--warn);
+        color: #333;
+      }
+      .grade-F {
+        background: var(--danger);
+      }
+
+      .review-item {
+        text-align: left;
+        margin-bottom: 24px;
+      }
+      .review-item .q-label {
+        margin-bottom: 4px;
+      }
+      .correct-badge,
+      .wrong-badge,
+      .partial-badge {
+        display: inline-block;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 2px 10px;
+        border-radius: 20px;
+        margin-bottom: 8px;
+      }
+      .correct-badge {
+        background: #e6f4ea;
+        color: var(--success);
+      }
+      .wrong-badge {
+        background: #fce8e6;
+        color: var(--danger);
+      }
+      .partial-badge {
+        background: #fef7e0;
+        color: #b06000;
+      }
+
+      .answer-block {
+        background: #f8f9fa;
+        border-left: 3px solid var(--success);
+        padding: 8px 12px;
+        border-radius: 0 6px 6px 0;
+        font-size: 0.9rem;
+        margin-top: 8px;
+      }
+      .answer-block strong {
+        color: var(--success);
+      }
+      .your-answer-block {
+        border-left-color: var(--danger);
+      }
+      .your-answer-block strong {
+        color: var(--danger);
+      }
+
+      @media (max-width: 600px) {
+        header h1 {
+          font-size: 1rem;
+        }
+        .q-card {
+          padding: 14px 12px;
+        }
+        .tf-table td,
+        .tf-table th {
+          padding: 10px 6px;
+          font-size: 0.85rem;
+        }
+        .tf-table input[type="radio"] {
+          width: 22px;
+          height: 22px;
+        }
+        .mc-option {
+          padding: 14px 12px;
+        }
+        .btn {
+          padding: 14px 24px;
+          font-size: 1rem;
+          width: 100%;
+        }
+        #nav-bar {
+          padding: 10px 12px;
+          gap: 8px;
+        }
+        #nav-bar .btn {
+          width: auto;
+          flex: 1;
+          padding: 12px 8px;
+          font-size: 0.95rem;
+        }
+        select.fill-select {
+          font-size: 0.8rem;
+          max-width: 200px;
+        }
+        pre {
+          font-size: 0.78rem;
+        }
+      }
+
+      /* Anti-cheat overlay */
+      #cheat-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        text-align: center;
+        color: #fff;
+        padding: 32px;
+      }
+      #cheat-overlay.show {
+        display: flex;
+      }
+      #cheat-overlay h2 {
+        font-size: 1.8rem;
+        margin-bottom: 12px;
+        color: #f28b82;
+      }
+      #cheat-overlay p {
+        font-size: 1.05rem;
+        color: #e8eaed;
+        margin-bottom: 8px;
+      }
+      #cheat-overlay .warn-count {
+        font-size: 1rem;
+        color: #fbbc04;
+        margin-bottom: 24px;
+        font-weight: 600;
+      }
+      #violation-badge {
+        display: none;
+        position: fixed;
+        top: 12px;
+        right: 16px;
+        background: var(--danger);
+        color: #fff;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 20px;
+        z-index: 200;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Java ITS Reviewer</h1>
+      <span id="q-counter"></span>
+      <div id="progress-bar-wrap">
+        <div id="progress-bar" style="width: 0%"></div>
+      </div>
+    </header>
+
+    <!-- START SCREEN -->
+    <main>
+      <div id="screen-start" class="screen active">
+        <h2>Java ITS Reviewer</h2>
+        <p>
+          50 practice questions covering Java fundamentals.<br />Answer all
+          questions, then review your results at the end.
+        </p>
+
+        <!-- Resume banner (hidden by default) -->
+        <div
+          id="resume-banner"
+          style="
+            display: none;
+            background: #e8f0fe;
+            border: 1px solid #c5d8fb;
+            border-radius: 10px;
+            padding: 16px 20px;
+            max-width: 400px;
+            margin: 0 auto 24px;
+            text-align: left;
+          "
+        >
+          <p style="font-weight: 600; margin-bottom: 4px">Resume your exam?</p>
+          <p
+            style="font-size: 0.9rem; color: var(--muted); margin-bottom: 12px"
+          >
+            <span id="resume-name"></span> &mdash;
+            <span id="resume-qnum"></span>
+          </p>
+          <button
+            id="btn-resume"
+            class="btn btn-primary"
+            style="margin-right: 8px; padding: 8px 20px"
+          >
+            Resume
+          </button>
+          <button
+            id="btn-start-fresh"
+            class="btn btn-secondary"
+            style="padding: 8px 20px"
+          >
+            Start Fresh
+          </button>
+        </div>
+
+        <div class="name-input-wrap">
+          <label for="student-name">Your Full Name</label>
+          <input
+            type="text"
+            id="student-name"
+            placeholder="e.g. Juan dela Cruz"
+            autocomplete="name"
+            maxlength="80"
+          />
+          <div class="name-error" id="name-error">
+            Please enter your name before starting.
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="startExam()">
+          Start Exam
+        </button>
+      </div>
+
+      <!-- QUESTION SCREEN -->
+      <div id="screen-question" class="screen">
+        <div id="question-container"></div>
+      </div>
+
+      <!-- RESULTS SCREEN -->
+      <div id="screen-results" class="screen">
+        <div class="q-card" style="text-align: center; padding: 32px">
+          <h2>Exam Complete!</h2>
+          <p
+            style="font-size: 1.1rem; font-weight: 600; margin-top: 4px"
+            id="result-name"
+          ></p>
+          <div id="score-circle" class="score-circle grade-A">
+            <span id="score-pct">0%</span>
+            <small id="score-frac"></small>
+          </div>
+          <p
+            id="score-msg"
+            style="font-size: 1.1rem; color: var(--muted); margin-bottom: 12px"
+          ></p>
+          <p
+            id="save-status"
+            style="font-size: 0.9rem; margin-bottom: 16px"
+          ></p>
+          <button class="btn btn-secondary" onclick="retakeExam()">
+            Retake Exam
+          </button>
+        </div>
+        <div id="review-container"></div>
+      </div>
+    </main>
+
+    <!-- Anti-cheat overlay -->
+    <div id="cheat-overlay">
+      <h2>⚠ You left the exam!</h2>
+      <p>
+        Switching tabs or minimizing the window is not allowed during the exam.
+      </p>
+      <p class="warn-count" id="warn-text"></p>
+      <button class="btn btn-primary" onclick="dismissWarning()">
+        Return to Exam
+      </button>
+    </div>
+    <div id="violation-badge"></div>
+
+    <!-- NAV BAR -->
+    <div id="nav-bar" class="hidden">
+      <button class="btn btn-secondary" id="btn-prev" onclick="prevQ()">
+        ← Previous
+      </button>
+      <span
+        id="nav-label"
+        style="font-size: 0.9rem; color: var(--muted)"
+      ></span>
+      <button class="btn btn-primary" id="btn-next" onclick="nextQ()">
+        Next →
+      </button>
+    </div>
+
+    <script>
+      // ============================================================
+      // QUESTION DATA
+      // ============================================================
+      const questions = [
+        {
+          id: 1,
+          type: "yes-no",
+          prompt: "Identify the output of the following code segment.",
+          code: `try {\n    int x = 1 / 0;\n    System.out.println("try");\n} catch (ArithmeticException ex) {\n    System.out.println("catch ArithmeticException");\n} catch (Exception ex) {\n    System.out.println("catch Exception");\n} finally {\n    System.out.println("finally");\n}`,
+          rows: [
+            "try",
+            "catch ArithmeticException",
+            "catch Exception",
+            "finally",
+          ],
+          answers: ["No", "Yes", "No", "Yes"],
+        },
+        {
+          id: 2,
+          type: "dropdown",
+          prompt:
+            "You are reviewing the conditional logic for a loan approval feature.\n\nA loan should be approved if:\n• the applicant is at least 18 years old with a credit score greater than 700, OR\n• the applicant is at least 25 years old with an income greater than 50,000.\n\nComplete the code by filling in the correct operators:",
+          prefix: "Operators available: != && < <= = == > >= ||",
+          template: [
+            { text: "if (age " },
+            {
+              blank: 0,
+              options: ["!=", "&&", "<", "<=", "=", "==", ">", ">=", "||"],
+              answer: ">=",
+            },
+            { text: " 18 " },
+            {
+              blank: 1,
+              options: ["!=", "&&", "<", "<=", "=", "==", ">", ">=", "||"],
+              answer: "&&",
+            },
+            { text: " creditScore " },
+            {
+              blank: 2,
+              options: ["!=", "&&", "<", "<=", "=", "==", ">", ">=", "||"],
+              answer: ">",
+            },
+            { text: " 700 " },
+            {
+              blank: 3,
+              options: ["!=", "&&", "<", "<=", "=", "==", ">", ">=", "||"],
+              answer: "||",
+            },
+            { text: "\n    age " },
+            {
+              blank: 4,
+              options: ["!=", "&&", "<", "<=", "=", "==", ">", ">=", "||"],
+              answer: ">=",
+            },
+            { text: " 25 " },
+            {
+              blank: 5,
+              options: ["!=", "&&", "<", "<=", "=", "==", ">", ">=", "||"],
+              answer: "&&",
+            },
+            { text: " income " },
+            {
+              blank: 6,
+              options: ["!=", "&&", "<", "<=", "=", "==", ">", ">=", "||"],
+              answer: ">",
+            },
+            {
+              text: ' 50000) {\n    System.out.println("Approved");\n} else {\n    System.out.println("Denied");\n}',
+            },
+          ],
+        },
+        {
+          id: 3,
+          type: "dropdown",
+          prompt:
+            "Evaluate the following Java program. What is output at each line?",
+          code: `int a = 10;\nint b = 3;\nint c = a % b;\nSystem.out.println(c);    // line 06\nint d = ++a - b--;\nSystem.out.println(d);    // line 08`,
+          template: [
+            { text: "Output of line 06: " },
+            { blank: 0, options: ["0", "1", "2", "3", "10"], answer: "1" },
+            { text: "\nOutput of line 08: " },
+            { blank: 1, options: ["7", "8", "9", "10", "11"], answer: "8" },
+          ],
+        },
+        {
+          id: 4,
+          type: "true-false",
+          prompt:
+            "You need to demonstrate your understanding of the `main` method. For each statement, select True or False.",
+          rows: [
+            "The `main` method parameter `args` is an array of type `String`.",
+            "A Java application can accept only one argument from the command line.",
+            "The `main` method must be `static` because it is run without instantiating an instance of the class.",
+            "The return type of the `main` method can be `int` instead of `void`.",
+          ],
+          answers: ["True", "False", "True", "False"],
+        },
+        {
+          id: 5,
+          type: "multiple-choice",
+          prompt:
+            "Your program uses a `Vehicle` class. Which of the following is the correct way to create an object instance named `myCar`?",
+          options: [
+            "Vehicle myCar = Vehicle();",
+            "Vehicle myCar = new Vehicle();",
+            "new Vehicle myCar = Vehicle();",
+            "myCar Vehicle = new Vehicle();",
+          ],
+          answer: 1,
+        },
+        {
+          id: 6,
+          type: "multiple-choice",
+          prompt:
+            "The `Animal` class must use a custom `toString` method instead of the standard one. Which annotation should you use at line 05 (before `toString`)?",
+          code: `public class Animal {\n    public String sound = \"generic\";\n\n    // line 05: annotation goes here\n    public String toString() {\n        return sound;\n    }\n}`,
+          options: [
+            "@Inherited",
+            "@Override",
+            "@Repeatable",
+            "@SuppressWarnings",
+          ],
+          answer: 1,
+        },
+        {
+          id: 7,
+          type: "yes-no",
+          prompt:
+            "For each `if` code segment, select Yes if it can be changed to a `switch` expression with up to three `case` statements, or No if it can't.",
+          rows: [
+            'if (score >= 90) grade="A"; else if (score >= 80) grade="B"; else grade="C";',
+            "if (gpa == 4.0) priority=1; else if (gpa >= 3.0) priority=2; else if (gpa >= 2.5) priority=3;",
+            "if (age >= 25) discount=0.50; else if (age >= 21) discount=0.25; else discount=0.0;",
+          ],
+          answers: ["Yes", "No", "No"],
+        },
+        {
+          id: 8,
+          type: "yes-no",
+          prompt:
+            "The following code does not compile. For each action, select Yes if it is required to resolve the compilation error, or No if it isn't.",
+          code: `public class BankAccount {\n    private double balance = 0;\n    public static void main(String[] args) {\n        BankAccount acc = new BankAccount();\n        balance = 500;          // error\n        withdraw();             // error\n    }\n    private void withdraw() {\n        System.out.println(balance);\n    }\n}`,
+          rows: [
+            "Change the access modifier of `balance` to `public`.",
+            "Change the access modifier of `withdraw()` to `public`.",
+            "On lines 07 and 08, add the prefix `acc.` to `balance` and `withdraw()`.",
+          ],
+          answers: ["No", "No", "Yes"],
+        },
+        {
+          id: 9,
+          type: "dropdown",
+          prompt:
+            "Complete the code: truncate `productName` to first 8 characters, then format a string with name and length.",
+          code: `String productName = "Refrigerator";\nproductName = productName.[___];\nString output = String.format("[___] is [___] characters long",\n                              productName, productName.[___]);\nSystem.out.println(output);`,
+          template: [
+            { text: "productName = productName." },
+            {
+              blank: 0,
+              options: [
+                "charAt(0,8)",
+                "substring(0,8)",
+                "trim(8)",
+                "slice(0,8)",
+              ],
+              answer: "substring(0,8)",
+            },
+            { text: ';\nString output = String.format("' },
+            { blank: 1, options: ["%s", "%d", "%f", "%c"], answer: "%s" },
+            { text: " is " },
+            { blank: 2, options: ["%s", "%d", "%f", "%c"], answer: "%d" },
+            { text: ' characters long", productName, productName.' },
+            {
+              blank: 3,
+              options: ["size()", "count()", "length()", "len()"],
+              answer: "length()",
+            },
+            { text: ");" },
+          ],
+        },
+        {
+          id: 10,
+          type: "multiple-choice",
+          prompt:
+            "What is output to the console after the loops finish executing?",
+          code: `char[][] grid = { {'X','O','X'}, {'O','X','O'}, {'X','O','X'} };\nfor (int r = 0; r < grid.length; r++)\n    for (int c = grid[r].length - 1; c >= 0; c--)\n        System.out.print(grid[r][c]);`,
+          options: ["XOXOXOXXOX", "XOXOXOXOX", "OXOXOXOXO", "XOXXOXXOX"],
+          answer: 1,
+        },
+        {
+          id: 11,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class DivisionCheck {\n    public static void main(String[] args) throws ArrayIndexOutOfBoundsException {\n        try {\n            int d = 5;\n            int n = 0;\n            int result = n / d;\n            int[] g = {1};\n            g[5] = 100;\n            System.out.println("Result: " + result);\n        }\n        catch (ArithmeticException e) {\n            System.out.println("Exception due to: " + e);\n        } catch (RuntimeException e) {\n            System.out.println("Exception due to: " + e);\n        }\n    }\n}`,
+          options: [
+            "Result: 0",
+            "Exception due to: java.lang.ArithmeticException: / by zero",
+            "Exception due to: java.lang.RuntimeException: Index 5 out of bounds for length 1",
+            "Exception due to: java.lang.ArrayIndexOutOfBoundsException: Index 5 out of bounds for length 1",
+          ],
+          answer: 3,
+        },
+        {
+          id: 12,
+          type: "dropdown",
+          prompt:
+            "Complete the method that validates passwords (all must be 8+ characters). Fill in the missing parts.",
+          template: [
+            {
+              text: "public boolean validatePasswords(String[] passwords) {\n    boolean allValid = true;\n    for ",
+            },
+            { blank: 0, options: ["each", "for", "while", "("], answer: "(" },
+            { text: "String pwd " },
+            { blank: 1, options: ["in", ":", "->", "="], answer: ":" },
+            {
+              text: " passwords) {\n        if (pwd.length() < 8) {\n            allValid = false;\n            break",
+            },
+            { blank: 2, options: [";", ",", "}", "//"], answer: ";" },
+            { text: "\n        }\n    }\n    return allValid;\n}" },
+          ],
+        },
+        {
+          id: 13,
+          type: "dropdown",
+          prompt:
+            "Complete the method that finds the minimum value in a double array.",
+          template: [
+            { text: "public double findMin(" },
+            {
+              blank: 0,
+              options: [
+                "double[] minArray",
+                "int[] minArray",
+                "float[] minArray",
+                "double minArray",
+              ],
+              answer: "double[] minArray",
+            },
+            {
+              text: ") {\n    double min = minArray[0];\n    for (int i = 1; i < ",
+            },
+            {
+              blank: 1,
+              options: [
+                "minArray.size()",
+                "minArray.length",
+                "minArray.count()",
+                "minArray.len",
+              ],
+              answer: "minArray.length",
+            },
+            { text: "; i++) {\n        if (" },
+            {
+              blank: 2,
+              options: [
+                "min < minArray[i]",
+                "min > minArray[i]",
+                "min == minArray[i]",
+                "min != minArray[i]",
+              ],
+              answer: "min > minArray[i]",
+            },
+            {
+              text: ")\n            min = minArray[i];\n    }\n    return min;\n}",
+            },
+          ],
+        },
+        {
+          id: 14,
+          type: "dropdown",
+          prompt:
+            "Complete the Circle class: public class, private radius, protected final PI.",
+          template: [
+            {
+              blank: 0,
+              options: [
+                "abstract",
+                "class",
+                "final",
+                "private",
+                "public class",
+                "protected",
+              ],
+              answer: "public class",
+            },
+            { text: " Circle {\n    " },
+            {
+              blank: 1,
+              options: ["abstract", "final", "private", "public", "protected"],
+              answer: "private",
+            },
+            { text: " double radius;\n    " },
+            {
+              blank: 2,
+              options: ["abstract", "final", "private", "public", "protected"],
+              answer: "final",
+            },
+            { text: " " },
+            {
+              blank: 3,
+              options: ["abstract", "final", "private", "public", "protected"],
+              answer: "protected",
+            },
+            { text: " double PI = 3.14159;\n}" },
+          ],
+        },
+        {
+          id: 15,
+          type: "multiple-choice",
+          prompt:
+            "What is output to the console window after the loops finish executing?",
+          code: `int[][] table = { {2, 4, 6}, {8, 10, 12}, {14, 16, 18} };\nfor (int x = 0; x < table.length; x++) {\n    for (int y = 0; y < table[x].length; y++) {\n        if (table[x][y] % 3 == 0) break;\n        System.out.printf("%d ", table[x][y]);\n    }\n}`,
+          options: [
+            "2 4 8 10 14 16",
+            "2 4 6 8 10 12 14 16 18",
+            "2 4 8 10 14 16 ",
+            "2 4",
+          ],
+          answer: 0,
+        },
+        {
+          id: 16,
+          type: "multiple-choice",
+          prompt:
+            "You need to store the numeric value `9,876,543,210` using the least amount of memory. Which data type should you use?",
+          options: ["int", "short", "byte", "long"],
+          answer: 3,
+        },
+        {
+          id: 17,
+          type: "dropdown",
+          prompt:
+            "Complete the `calculateFee` method per the requirements:\n- Return 0.0 if premium AND 5+ years\n- Return 25.0 if premium AND < 5 years\n- Return 99.0 if not premium AND renewing\n- Return 150.0 otherwise",
+          template: [
+            {
+              text: "double calculateFee(boolean isPremium, int years, boolean renewMembership) {\n    double fee;\n    if (isPremium) {\n        if (",
+            },
+            {
+              blank: 0,
+              options: ["years < 5", "years > 5", "years >= 5", "years <= 5"],
+              answer: "years >= 5",
+            },
+            { text: ") {\n            fee = 0.0;\n        }\n        " },
+            {
+              blank: 1,
+              options: [
+                "else if (years < 5)",
+                "else",
+                "} else {",
+                "} else if {",
+              ],
+              answer: "else",
+            },
+            { text: " {\n            fee = 25.0;\n        }\n    }\n    " },
+            {
+              blank: 2,
+              options: [
+                "if (renewMembership)",
+                "else if (renewMembership)",
+                "while (renewMembership)",
+                "else {",
+              ],
+              answer: "else if (renewMembership)",
+            },
+            { text: " {\n        fee = 99.0;\n    }\n    " },
+            {
+              blank: 3,
+              options: ["else if", "else", "finally", "catch"],
+              answer: "else",
+            },
+            { text: " {\n        fee = 150.0;\n    }\n    return fee;\n}" },
+          ],
+        },
+        {
+          id: 18,
+          type: "dropdown",
+          prompt:
+            "Complete the code to test the `Triangle` class (base=10, height=6, area should be 30).",
+          template: [
+            { text: "int areaNum;\n" },
+            {
+              blank: 0,
+              options: [
+                "Triangle tri = Triangle(10, 6);",
+                "Triangle tri = new Triangle(10, 6);",
+                "var tri = new Triangle(10, 6);",
+                "Triangle tri = new Triangle();",
+              ],
+              answer: "Triangle tri = new Triangle(10, 6);",
+            },
+            {
+              text: '\nareaNum = (int)tri.area();\nSystem.out.printf("Base = %d Height = %d\\n", tri.getBase(), tri.getHeight());\nSystem.out.printf("Area is correct: %b\\n", areaNum == 30);',
+            },
+          ],
+        },
+        {
+          id: 19,
+          type: "dropdown",
+          prompt:
+            "Complete the signature of the first method that runs when a Java application starts.",
+          template: [
+            {
+              blank: 0,
+              options: ["private", "protected", "public", "package"],
+              answer: "public",
+            },
+            { text: " " },
+            {
+              blank: 1,
+              options: ["final", "abstract", "static", "native"],
+              answer: "static",
+            },
+            { text: " " },
+            {
+              blank: 2,
+              options: ["int", "String", "boolean", "void"],
+              answer: "void",
+            },
+            { text: " main(" },
+            {
+              blank: 3,
+              options: [
+                "String args",
+                "String[] args",
+                "int[] args",
+                "char[] args",
+              ],
+              answer: "String[] args",
+            },
+            { text: ') {\n    System.out.print("Hello World");\n}' },
+          ],
+        },
+        {
+          id: 20,
+          type: "dropdown",
+          prompt:
+            "Evaluate the casting chain: float → int → long → byte. What is the value at each step?",
+          code: `float value1 = 9.99f;\nint value2 = (int)value1;\nlong value3 = (long)value2;\nbyte value4 = (byte)value3;`,
+          template: [
+            { text: "value2 = " },
+            { blank: 0, options: ["9", "10", "9.99", "0"], answer: "9" },
+            { text: "\nvalue3 = " },
+            { blank: 1, options: ["9", "10", "9L", "0"], answer: "9" },
+            { text: "\nvalue4 = " },
+            { blank: 2, options: ["9", "10", "9b", "0"], answer: "9" },
+          ],
+        },
+        {
+          id: 21,
+          type: "dropdown",
+          prompt:
+            "Refactor the while loop to a do-while loop without changing its functionality.",
+          code: `// Original:\ndisplayMenu();\nboolean running = true;\nwhile (running) {\n    boolean b = processInput();\n    if (!b) running = false;\n    else displayMenu();\n}`,
+          template: [
+            { blank: 0, options: ["while", "do", "for", "loop"], answer: "do" },
+            { text: "\n{\n    displayMenu();\n}" },
+            {
+              blank: 1,
+              options: [
+                "while (processInput());",
+                "while (processInput())",
+                "} while (processInput());",
+                "; while (processInput())",
+              ],
+              answer: "while (processInput());",
+            },
+          ],
+        },
+        {
+          id: 22,
+          type: "dropdown",
+          prompt:
+            "Complete the code: truncate `lastName` to first 4 characters, then format a string with name and length.",
+          template: [
+            { text: 'String lastName = "Washington";\nlastName = lastName.' },
+            {
+              blank: 0,
+              options: [
+                "substring(0,4)",
+                "charAt(0,4)",
+                "trim(4)",
+                "slice(0,4)",
+              ],
+              answer: "substring(0,4)",
+            },
+            { text: ';\nString output = String.format("' },
+            { blank: 1, options: ["%s", "%d", "%f", "%b"], answer: "%s" },
+            { text: " is " },
+            { blank: 2, options: ["%s", "%d", "%f", "%b"], answer: "%d" },
+            { text: ' characters long", lastName, lastName.' },
+            {
+              blank: 3,
+              options: ["size()", "count()", "length()", "len()"],
+              answer: "length()",
+            },
+            { text: ");" },
+          ],
+        },
+        {
+          id: 23,
+          type: "dropdown",
+          prompt:
+            "Complete the Freezer class: package-private class, private temperature, package-private final minTemperature.",
+          template: [
+            {
+              blank: 0,
+              options: [
+                "abstract",
+                "class",
+                "final",
+                "private",
+                "public class",
+                "protected",
+              ],
+              answer: "class",
+            },
+            { text: " Freezer {\n    " },
+            {
+              blank: 1,
+              options: ["abstract", "final", "private", "public", "protected"],
+              answer: "private",
+            },
+            { text: " int temperature;\n    " },
+            {
+              blank: 2,
+              options: ["abstract", "final", "private", "public", "protected"],
+              answer: "final",
+            },
+            { text: " int minTemperature = -40;\n}" },
+          ],
+        },
+        {
+          id: 24,
+          type: "dropdown",
+          prompt: "Complete the code to read an employee ID from user input.",
+          template: [
+            { text: "import " },
+            {
+              blank: 0,
+              options: [
+                "java.util.Scanner",
+                "java.io.Scanner",
+                "java.lang.Scanner",
+                "java.input.Scanner",
+              ],
+              answer: "java.util.Scanner",
+            },
+            {
+              text: ';\npublic class EmployeeReader {\n    public static int getEmployeeId() {\n        System.out.println("Enter employee ID:");\n        ',
+            },
+            {
+              blank: 1,
+              options: [
+                "Scanner sc = new Scanner(System.in);",
+                "Scanner sc = Scanner.create();",
+                "Scanner sc = new Scanner();",
+                "Scanner sc = System.scanner();",
+              ],
+              answer: "Scanner sc = new Scanner(System.in);",
+            },
+            { text: "\n        int empId = " },
+            {
+              blank: 2,
+              options: [
+                "sc.nextInt();",
+                "sc.readInt();",
+                "sc.getInt();",
+                "sc.parseInt();",
+              ],
+              answer: "sc.nextInt();",
+            },
+            { text: "\n        " },
+            {
+              blank: 3,
+              options: [
+                "sc.close();",
+                "sc.end();",
+                "sc.finish();",
+                "sc.dispose();",
+              ],
+              answer: "sc.close();",
+            },
+            { text: "\n        return empId;\n    }\n}" },
+          ],
+        },
+        {
+          id: 25,
+          type: "dropdown",
+          prompt: "Identify the value of each expression.",
+          code: `(3 + 4) * 3 - 1   = ?\n5 * 5 + 2 * 5      = ?\n9 * 2 % 3          = ?\n7 / 2 - 3 % 2      = ?`,
+          template: [
+            { text: "(3 + 4) * 3 - 1 = " },
+            { blank: 0, options: ["19", "20", "21", "0"], answer: "20" },
+            { text: "\n5 * 5 + 2 * 5 = " },
+            { blank: 1, options: ["35", "30", "25", "50"], answer: "35" },
+            { text: "\n9 * 2 % 3 = " },
+            { blank: 2, options: ["0", "1", "2", "6"], answer: "0" },
+            { text: "\n7 / 2 - 3 % 2 = " },
+            { blank: 3, options: ["1", "2", "3", "4"], answer: "2" },
+          ],
+        },
+        {
+          id: 26,
+          type: "dropdown",
+          prompt:
+            "Complete the Library class. `searchCatalog` is package-private static; `checkoutBook` is protected instance method.",
+          template: [
+            { text: "public class Library {\n    " },
+            {
+              blank: 0,
+              options: [
+                "public static",
+                "private static",
+                "static",
+                "protected static",
+              ],
+              answer: "static",
+            },
+            { text: " void searchCatalog() { /* ... */ }\n    " },
+            {
+              blank: 1,
+              options: ["public", "private", "protected", "static"],
+              answer: "protected",
+            },
+            { text: " void checkoutBook(String[] data) { /* ... */ }\n}" },
+          ],
+        },
+        {
+          id: 27,
+          type: "dropdown",
+          prompt:
+            "Complete the Course class: `setMaxStudents` is package-private static; `setPassingGrade` is package-private instance method.",
+          template: [
+            { text: "class Course {\n    " },
+            {
+              blank: 0,
+              options: [
+                "public static",
+                "private static",
+                "static",
+                "protected static",
+              ],
+              answer: "static",
+            },
+            { text: " void setMaxStudents(int count) { }\n    " },
+            {
+              blank: 1,
+              options: ["public", "private", "protected", "(no modifier)"],
+              answer: "(no modifier)",
+            },
+            { text: " void setPassingGrade(int grade) { }\n}" },
+          ],
+        },
+        {
+          id: 28,
+          type: "dropdown",
+          prompt:
+            "Complete the Airplane class: public class, private altitude, package-private maxAltitude (no final).",
+          template: [
+            {
+              blank: 0,
+              options: [
+                "class",
+                "public class",
+                "protected class",
+                "abstract class",
+              ],
+              answer: "public class",
+            },
+            { text: " Airplane {\n    " },
+            {
+              blank: 1,
+              options: ["private", "public", "protected", "static"],
+              answer: "private",
+            },
+            { text: " int altitude;\n    " },
+            {
+              blank: 2,
+              options: ["private", "public", "protected", "(package-private)"],
+              answer: "(package-private)",
+            },
+            { text: " String maxAltitude;\n}" },
+          ],
+        },
+        {
+          id: 29,
+          type: "multiple-choice",
+          prompt:
+            "The `Shape` class must use a custom `toString` method instead of the standard one. Which annotation should you use before `toString`?",
+          code: `public class Shape {\n    public String color = "red";\n\n    // annotation goes here\n    public String toString() {\n        return color;\n    }\n}`,
+          options: [
+            "@Inherited",
+            "@SuppressWarnings",
+            "@Repeatable",
+            "@Override",
+          ],
+          answer: 3,
+        },
+        {
+          id: 30,
+          type: "true-false",
+          prompt:
+            "Evaluate the Health class. For each statement, select True or False.",
+          code: `public class Health {\n    static int bonus = 20;\n    public static int updateHealth(int hp, Boolean shield, int extra) {\n        if (shield == true) {\n            hp += extra;\n        }\n        return hp;\n    }\n    public static void main(String[] args) {\n        Boolean shield = true;\n        int hp = 50;\n        int newHp = updateHealth(hp, shield, 100);\n        System.out.println(hp);\n        System.out.println(newHp);\n    }\n}`,
+          rows: [
+            "The value of `shield` at line 04 is `true`.",
+            "The value of `bonus` at line 05 is `20`.",
+            "The value of `hp` at line 07 is `150`.",
+            "The value of `newHp` at line 14 is `150`.",
+          ],
+          answers: ["True", "True", "True", "True"],
+        },
+        {
+          id: 31,
+          type: "dropdown",
+          prompt:
+            "Evaluate the following Java program. What is output at each line?",
+          code: `int p = 3;\nint q = 4;\nString r1 = "p * q = " + p * q;\nSystem.out.println(r1);    // line 06\nString r2 = "p * q = " + (p * q);\nSystem.out.println(r2);    // line 08`,
+          template: [
+            { text: "Output of line 06: " },
+            {
+              blank: 0,
+              options: [
+                "p * q = 34",
+                "p * q = 12",
+                "p * q = 7",
+                "p * q = 3 * 4",
+              ],
+              answer: "p * q = 12",
+            },
+            { text: "\nOutput of line 08: " },
+            {
+              blank: 1,
+              options: [
+                "p * q = 34",
+                "p * q = 12",
+                "p * q = 7",
+                "p * q = 3 * 4",
+              ],
+              answer: "p * q = 12",
+            },
+          ],
+        },
+        {
+          id: 32,
+          type: "true-false",
+          prompt:
+            "Evaluate the Policy class. For each statement, select True or False.",
+          code: `public class Policy {\n    protected double premium;\n    public Policy() {\n        premium = 0;\n    }\n    public Policy(double amount) {\n        premium = amount;\n    }\n}`,
+          rows: [
+            "The `Policy` class has a single constructor.",
+            "Other classes can inherit the `Policy` class.",
+            "Line 07 is equivalent to `this.premium = amount;`",
+          ],
+          answers: ["False", "True", "True"],
+        },
+        {
+          id: 33,
+          type: "true-false",
+          prompt:
+            "Evaluate the Account class. For each statement, select True or False.",
+          code: `public class Account {\n    protected int balance;\n    public Account() {\n        balance = 0;\n    }\n    public Account(int amount) {\n        balance = amount;\n    }\n}`,
+          rows: [
+            "The `Account` class has a single constructor.",
+            "Other classes can inherit the `Account` class.",
+            "Line 07 is equivalent to `this.balance = amount;`",
+          ],
+          answers: ["False", "True", "True"],
+        },
+        {
+          id: 34,
+          type: "dropdown",
+          prompt:
+            "The program below has errors. Correct the code by selecting the right operators.",
+          code: `// Buggy code:\nwhile (count => 0) {\n    if (count = 0)\n        break;\n    else {\n        System.out.println("Counting down...");\n        count--;\n    }\n}`,
+          template: [
+            { text: "while (count " },
+            { blank: 0, options: ["=>", ">=", "<=", ">"], answer: ">=" },
+            { text: " 0) {\n    if (count " },
+            { blank: 1, options: ["=", "==", "!=", ">="], answer: "==" },
+            {
+              text: ' 0)\n        break;\n    else {\n        System.out.println("Counting down...");\n        count',
+            },
+            { blank: 2, options: ["++", "--", "-=1", "+=1"], answer: "--" },
+            { text: ";\n    }\n}" },
+          ],
+        },
+        {
+          id: 35,
+          type: "dropdown",
+          prompt:
+            "Complete the Store class: `displayInventory` is public static; `addProduct` is protected instance method.",
+          template: [
+            { text: "public class Store {\n    " },
+            {
+              blank: 0,
+              options: [
+                "public static",
+                "private static",
+                "static",
+                "protected static",
+              ],
+              answer: "public static",
+            },
+            { text: " void displayInventory() { /* ... */ }\n    " },
+            {
+              blank: 1,
+              options: ["public", "private", "protected", "static"],
+              answer: "protected",
+            },
+            { text: " void addProduct(String[] data) { /* ... */ }\n}" },
+          ],
+        },
+        {
+          id: 36,
+          type: "multiple-choice",
+          prompt:
+            "What is output to the console window after the loops finish executing?",
+          code: `int[][] scores = { {90, 45, 70}, {30, 88, 55}, {60, 20, 95} };\nfor (int x = 0; x < scores.length; x++) {\n    for (int y = 0; y < scores[x].length; y++) {\n        if (scores[x][y] < 50) break;\n        System.out.printf("%d ", scores[x][y]);\n    }\n}`,
+          options: [
+            "90 70 88 55 60 95",
+            "90 88 55 60 95",
+            "90 88 60",
+            "90 88 55 60 20 95",
+          ],
+          answer: 2,
+        },
+        {
+          id: 37,
+          type: "dropdown",
+          prompt:
+            "Complete the `tempClassification` method: hot ≥ 35, warm ≥ 20, else cold.",
+          template: [
+            {
+              text: "public static String tempClassification(int temp) {\n    String classification;\n    if (temp ",
+            },
+            {
+              blank: 0,
+              options: ["> 35", ">= 35", "< 35", "== 35"],
+              answer: ">= 35",
+            },
+            { text: ')\n        classification = "hot";\n    else if (temp ' },
+            {
+              blank: 1,
+              options: ["> 20", ">= 20", "< 35", ">= 20 && temp < 35"],
+              answer: ">= 20",
+            },
+            {
+              text: ')\n        classification = "warm";\n    else\n        classification = "cold";\n    return classification;\n}',
+            },
+          ],
+        },
+        {
+          id: 38,
+          type: "multiple-choice",
+          prompt:
+            "What is the correct syntax for a multi-line comment in Java?",
+          options: [
+            "# this is a comment",
+            "\\\\ this is a comment",
+            "// this is a comment",
+            "/* this is a comment */",
+          ],
+          answer: 3,
+        },
+        {
+          id: 39,
+          type: "yes-no",
+          prompt:
+            "The following code does not compile. For each action, select Yes if it is required to resolve the error, or No if it isn't.",
+          code: `public class Employee {\n    private int salary = 5000;\n    public static void main(String[] args) {\n        Employee emp = new Employee();\n        salary = 7000;         // error\n        displaySalary();       // error\n    }\n    protected void displaySalary() {\n        System.out.println(salary);\n    }\n}`,
+          rows: [
+            "Change the access modifier of `salary` to `public`.",
+            "Change the access modifier of `displaySalary()` to `public`.",
+            "On lines 07 and 08, add the prefix `emp.` to `salary` and `displaySalary()`.",
+          ],
+          answers: ["No", "No", "Yes"],
+        },
+        {
+          id: 40,
+          type: "dropdown",
+          prompt: "Evaluate the code segment. What is the output at each line?",
+          code: `byte value1 = 100;\nvalue1++;\nSystem.out.println(value1);    // line 03\nSystem.out.println(10.0 / 4.0); // line 04\nSystem.out.println(10.0f / 4.0f); // line 05`,
+          template: [
+            { text: "Output of line 03: " },
+            { blank: 0, options: ["100", "101", "102", "0"], answer: "101" },
+            { text: "\nOutput of line 04: " },
+            { blank: 1, options: ["2", "2.5", "2.0", "2.50"], answer: "2.5" },
+            { text: "\nOutput of line 05: " },
+            { blank: 2, options: ["2", "2.5", "2.0", "2.50"], answer: "2.5" },
+          ],
+        },
+        {
+          id: 41,
+          type: "dropdown",
+          prompt:
+            "Complete the declaration of a 3x2 `int` array with initial values.",
+          template: [
+            { text: "int[][] grid = " },
+            {
+              blank: 0,
+              options: ["{{", "[[", "{{1,2},{", "[ {"],
+              answer: "{{",
+            },
+            { text: "1,2" },
+            {
+              blank: 1,
+              options: ["},{", "],[", " },{ ", "},{"],
+              answer: "},{",
+            },
+            { text: "3,4" },
+            {
+              blank: 2,
+              options: ["},{", "],[", " },{ ", "},{"],
+              answer: "},{",
+            },
+            { text: "5,6" },
+            { blank: 3, options: ["}};", "]];", " }};", "};"], answer: "}};" },
+          ],
+        },
+        {
+          id: 42,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class ArrayManipulation {\n    public static void main(String[] args) throws ArrayIndexOutOfBoundsException {\n        try {\n            int d = 2;\n            int n = 10;\n            int fraction = n / d;\n            int[] g = {1, 2, 3};\n            g[5] = 100;\n            System.out.println("The result: " + fraction);\n        }\n        catch (ArithmeticException e) {\n            System.out.println("Exception due to: " + e);\n        } catch (RuntimeException e) {\n            System.out.println("Exception due to: " + e);\n        }\n    }\n}`,
+          options: [
+            "The result: 5",
+            "Exception due to: java.lang.ArithmeticException: / by zero",
+            "Exception due to: java.lang.RuntimeException: Index 5 out of bounds for length 3",
+            "Exception due to: java.lang.ArrayIndexOutOfBoundsException: Index 5 out of bounds for length 3",
+          ],
+          answer: 3,
+        },
+        {
+          id: 43,
+          type: "dropdown",
+          prompt:
+            "Complete the method that checks if all elements in an int array are non-negative.",
+          template: [
+            {
+              text: "public boolean allPositive(int[] nums) {\n    boolean result = true;\n    for ",
+            },
+            { blank: 0, options: ["(", "each", "for", "while"], answer: "(" },
+            { text: "int n " },
+            { blank: 1, options: ["in", ":", "->", "="], answer: ":" },
+            {
+              text: " nums) {\n        if (n < 0) {\n            result = false;\n            break",
+            },
+            { blank: 2, options: [";", ",", "}", "//"], answer: ";" },
+            { text: "\n        }\n    }\n    return result;\n}" },
+          ],
+        },
+        {
+          id: 44,
+          type: "dropdown",
+          prompt:
+            "Evaluate the following Java program. What is output at each line?",
+          code: `int x = 4;\nint y = 6;\nString val1 = "x + y = " + x + y;\nSystem.out.println(val1);    // line 05\nString val2 = "x + y = " + (x + y);\nSystem.out.println(val2);    // line 07`,
+          template: [
+            { text: "Output of line 05: " },
+            {
+              blank: 0,
+              options: [
+                "x + y = 10",
+                "x + y = 46",
+                "x + y = 4 + 6",
+                "x + y = 64",
+              ],
+              answer: "x + y = 46",
+            },
+            { text: "\nOutput of line 07: " },
+            {
+              blank: 1,
+              options: [
+                "x + y = 10",
+                "x + y = 46",
+                "x + y = 4 + 6",
+                "x + y = 64",
+              ],
+              answer: "x + y = 10",
+            },
+          ],
+        },
+        {
+          id: 45,
+          type: "multiple-choice",
+          prompt:
+            "You need to store the numeric value `-200` using the least amount of memory. Which data type should you use?",
+          options: ["long", "int", "short", "byte"],
+          answer: 2,
+        },
+        {
+          id: 46,
+          type: "dropdown",
+          prompt: "Complete the code to read a product name from user input.",
+          template: [
+            { text: "import " },
+            {
+              blank: 0,
+              options: [
+                "java.util.Scanner",
+                "java.io.Scanner",
+                "java.lang.Scanner",
+                "java.input.Scanner",
+              ],
+              answer: "java.util.Scanner",
+            },
+            {
+              text: ';\npublic class ProductReader {\n    public static String getProductName() {\n        System.out.println("Enter product name:");\n        ',
+            },
+            {
+              blank: 1,
+              options: [
+                "Scanner sc = new Scanner(System.in);",
+                "Scanner sc = Scanner.create();",
+                "Scanner sc = new Scanner();",
+                "Scanner sc = System.scanner();",
+              ],
+              answer: "Scanner sc = new Scanner(System.in);",
+            },
+            { text: "\n        String name = " },
+            {
+              blank: 2,
+              options: [
+                "sc.nextLine();",
+                "sc.readLine();",
+                "sc.getString();",
+                "sc.next();",
+              ],
+              answer: "sc.nextLine();",
+            },
+            { text: "\n        " },
+            {
+              blank: 3,
+              options: [
+                "sc.close();",
+                "sc.end();",
+                "sc.finish();",
+                "sc.dispose();",
+              ],
+              answer: "sc.close();",
+            },
+            { text: "\n        return name;\n    }\n}" },
+          ],
+        },
+        {
+          id: 47,
+          type: "multiple-choice",
+          prompt:
+            "What is output to the console window after the loops finish executing?",
+          code: `int[][] data = { {5, 15, 3}, {12, 7, 20}, {1, 9, 18} };\nfor (int x = 0; x < data.length; x++) {\n    for (int y = 0; y < data[x].length; y++) {\n        if (data[x][y] < 10) break;\n        System.out.printf("%d ", data[x][y]);\n    }\n}`,
+          options: [
+            "15 12 20 18",
+            "15 12 20 9 18",
+            "5 15 12 20 18",
+            "15 12 7 20 9 18",
+          ],
+          answer: 0,
+        },
+        {
+          id: 48,
+          type: "true-false",
+          prompt:
+            "Evaluate the Score class. For each statement, select True or False.",
+          code: `public class Score {\n    static int maxScore = 100;\n    public static int adjustScore(int val, Boolean bonus, int extra) {\n        if (bonus == true) {\n            val += extra;\n        }\n        return val;\n    }\n    public static void main(String[] args) {\n        Boolean bonus = false;\n        int val = 70;\n        int newVal = adjustScore(val, bonus, 30);\n        System.out.println(val);\n        System.out.println(newVal);\n    }\n}`,
+          rows: [
+            "The value of `bonus` at line 04 is `true`.",
+            "The value of `maxScore` at line 05 is `100`.",
+            "The value of `val` at line 07 is `70`.",
+            "The value of `newVal` at line 14 is `100`.",
+          ],
+          answers: ["False", "True", "True", "False"],
+        },
+        {
+          id: 49,
+          type: "dropdown",
+          prompt:
+            "Complete the method that sums all elements in a double array.",
+          template: [
+            { text: "public double sumArray(" },
+            {
+              blank: 0,
+              options: [
+                "double[] arr",
+                "int[] arr",
+                "float[] arr",
+                "double arr",
+              ],
+              answer: "double[] arr",
+            },
+            { text: ") {\n    double total = " },
+            { blank: 1, options: ["0", "0.0", "1.0", "-1"], answer: "0.0" },
+            { text: ";\n    for (int i = " },
+            { blank: 2, options: ["0", "1", "-1", "arr.length"], answer: "0" },
+            { text: "; i < " },
+            {
+              blank: 3,
+              options: ["arr.size()", "arr.length", "arr.count()", "arr.len"],
+              answer: "arr.length",
+            },
+            { text: "; i++) {\n        total " },
+            { blank: 4, options: ["+=", "-=", "*=", "/="], answer: "+=" },
+            { text: " arr[i];\n    }\n    return total;\n}" },
+          ],
+        },
+        {
+          id: 50,
+          type: "dropdown",
+          prompt:
+            "Complete the Printer class: package-private class, private inkLevel, package-private final maxPages.",
+          template: [
+            {
+              blank: 0,
+              options: [
+                "abstract",
+                "class",
+                "final",
+                "private",
+                "public class",
+                "protected",
+              ],
+              answer: "class",
+            },
+            { text: " Printer {\n    " },
+            {
+              blank: 1,
+              options: ["abstract", "final", "private", "public", "protected"],
+              answer: "private",
+            },
+            { text: " int inkLevel;\n    " },
+            {
+              blank: 2,
+              options: ["abstract", "final", "private", "public", "protected"],
+              answer: "final",
+            },
+            { text: " int maxPages = 500;\n}" },
+          ],
+        },
+      ];
+
+      // ============================================================
+      // STATE
+      // ============================================================
+      let currentQ = 0;
+      let userAnswers = {};
+      let studentName = "";
+
+      // ============================================================
+      // LOCAL STORAGE — persist progress across disconnects
+      // ============================================================
+      const STORAGE_KEY = "java_its_progress";
+
+      function saveProgress() {
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({
+            studentName,
+            currentQ,
+            userAnswers,
+          }),
+        );
+      }
+
+      function loadProgress() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          return raw ? JSON.parse(raw) : null;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function clearProgress() {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+
+      // ============================================================
+      // ANTI-CHEAT
+      // ============================================================
+      let violations = 0;
+      let examActive = false;
+      const MAX_WARNINGS = 3;
+
+      const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+
+      function enterFullscreen() {
+        if (isMobile) return; // mobile browsers don't support fullscreen
+        const el = document.documentElement;
+        if (el.requestFullscreen) el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      }
+
+      function exitFullscreenHandler() {
+        if (!examActive) return;
+        const isFullscreen =
+          document.fullscreenElement || document.webkitFullscreenElement;
+        if (!isFullscreen) recordViolation();
+      }
+
+      function recordViolation() {
+        if (!examActive) return;
+        violations++;
+        saveProgress();
+        const badge = document.getElementById("violation-badge");
+        badge.style.display = "block";
+        badge.textContent = `⚠ ${violations} violation${violations > 1 ? "s" : ""}`;
+        const overlay = document.getElementById("cheat-overlay");
+        const warnText = document.getElementById("warn-text");
+        warnText.textContent = `Warning ${violations} of ${MAX_WARNINGS}${violations >= MAX_WARNINGS ? " — your submission will be flagged." : ""}`;
+        overlay.classList.add("show");
+      }
+
+      function dismissWarning() {
+        document.getElementById("cheat-overlay").classList.remove("show");
+        enterFullscreen();
+      }
+
+      function startAntiCheat() {
+        examActive = true;
+        enterFullscreen();
+
+        // Tab visibility change
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden && examActive) recordViolation();
+        });
+
+        // Fullscreen exit
+        document.addEventListener("fullscreenchange", exitFullscreenHandler);
+        document.addEventListener(
+          "webkitfullscreenchange",
+          exitFullscreenHandler,
+        );
+      }
+
+      function stopAntiCheat() {
+        examActive = false;
+      }
+
+      // ============================================================
+      // SCREENS
+      // ============================================================
+      function showScreen(id) {
+        document
+          .querySelectorAll(".screen")
+          .forEach((s) => s.classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+      }
+
+      function startExam() {
+        const nameInput = document.getElementById("student-name");
+        const nameError = document.getElementById("name-error");
+        const name = nameInput.value.trim();
+        if (!name) {
+          nameInput.classList.add("error");
+          nameError.style.display = "block";
+          nameInput.focus();
+          return;
+        }
+        nameInput.classList.remove("error");
+        nameError.style.display = "none";
+        studentName = name;
+        currentQ = 0;
+        userAnswers = {};
+        saveProgress();
+        launchExam();
+      }
+
+      function resumeExam(saved) {
+        studentName = saved.studentName;
+        currentQ = saved.currentQ;
+        userAnswers = saved.userAnswers;
+        launchExam();
+      }
+
+      function launchExam() {
+        violations = 0;
+        document.getElementById("violation-badge").style.display = "none";
+        showScreen("screen-question");
+        document.getElementById("nav-bar").classList.remove("hidden");
+        renderQuestion(currentQ);
+        updateHeader();
+        startAntiCheat();
+      }
+
+      function retakeExam() {
+        stopAntiCheat();
+        clearProgress();
+        violations = 0;
+        studentName = "";
+        document.getElementById("student-name").value = "";
+        document.getElementById("violation-badge").style.display = "none";
+        document.getElementById("nav-bar").classList.add("hidden");
+        showScreen("screen-start");
+      }
+
+      // On page load — check for saved progress
+      window.addEventListener("load", () => {
+        const saved = loadProgress();
+        if (saved && saved.studentName) {
+          const banner = document.getElementById("resume-banner");
+          document.getElementById("resume-name").textContent =
+            saved.studentName;
+          document.getElementById("resume-qnum").textContent =
+            `Question ${saved.currentQ + 1} of ${questions.length}`;
+          banner.style.display = "block";
+          document.getElementById("btn-resume").onclick = () =>
+            resumeExam(saved);
+          document.getElementById("btn-start-fresh").onclick = () => {
+            clearProgress();
+            banner.style.display = "none";
+          };
+        }
+      });
+
+      // ============================================================
+      // RENDER
+      // ============================================================
+      function renderQuestion(idx) {
+        const q = questions[idx];
+        const container = document.getElementById("question-container");
+        let html = `<div class="q-card">
+    <div class="q-label">Question ${idx + 1} of ${questions.length} &mdash; ${typeLabel(q.type)}</div>
+    <div class="q-text">${formatText(q.prompt)}</div>`;
+
+        if (q.code) html += `<pre>${escHtml(q.code)}</pre>`;
+        if (q.prefix)
+          html += `<p style="margin-bottom:8px;font-size:.9rem;color:var(--muted);">${escHtml(q.prefix)}</p>`;
+
+        if (q.type === "multiple-choice") {
+          html += renderMC(q, idx);
+        } else if (q.type === "true-false") {
+          html += renderTF(q, idx, "True", "False");
+        } else if (q.type === "yes-no") {
+          html += renderTF(q, idx, "Yes", "No");
+        } else if (q.type === "dropdown") {
+          html += renderDropdown(q, idx);
+        }
+
+        html += `</div>`;
+        container.innerHTML = html;
+
+        // Restore saved answer
+        if (userAnswers[idx] !== undefined) {
+          restoreAnswer(q, idx);
+        }
+
+        updateNavButtons(idx);
+      }
+
+      function typeLabel(t) {
+        return (
+          {
+            "multiple-choice": "Multiple Choice",
+            "true-false": "True / False",
+            "yes-no": "Yes / No",
+            dropdown: "Fill in the Blank",
+          }[t] || t
+        );
+      }
+
+      function formatText(txt) {
+        // backtick → code, newline → <br>
+        return escHtml(txt)
+          .replace(/`([^`]+)`/g, "<code>$1</code>")
+          .replace(/\n/g, "<br>");
+      }
+
+      function escHtml(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function renderMC(q, idx) {
+        const saved = userAnswers[idx] !== undefined ? userAnswers[idx] : -1;
+        return q.options
+          .map(
+            (opt, i) =>
+              `<label class="mc-option${saved === i ? " selected" : ""}">
+      <input type="radio" name="mc_${idx}" value="${i}" onchange="saveMC(${idx}, ${i})" ${saved === i ? "checked" : ""}>
+      <span class="mc-label">${String.fromCharCode(65 + i)}.</span>
+      <span>${formatText(opt)}</span>
+    </label>`,
+          )
+          .join("");
+      }
+
+      function renderTF(q, idx, opt1, opt2) {
+        const saved = userAnswers[idx] || {};
+        let html = `<table class="tf-table"><thead><tr><th>Statement</th><th>${opt1}</th><th>${opt2}</th></tr></thead><tbody>`;
+        q.rows.forEach((row, r) => {
+          html += `<tr>
+      <td>${formatText(row)}</td>
+      <td><input type="radio" name="tf_${idx}_${r}" value="${opt1}" onchange="saveTF(${idx}, ${r}, '${opt1}')" ${saved[r] === opt1 ? "checked" : ""}></td>
+      <td><input type="radio" name="tf_${idx}_${r}" value="${opt2}" onchange="saveTF(${idx}, ${r}, '${opt2}')" ${saved[r] === opt2 ? "checked" : ""}></td>
+    </tr>`;
+        });
+        html += "</tbody></table>";
+        return html;
+      }
+
+      function renderDropdown(q, idx) {
+        const saved = userAnswers[idx] || {};
+        let blankCount = 0;
+        let html = '<div class="code-block-fill">';
+        q.template.forEach((part) => {
+          if (part.text !== undefined) {
+            html += escHtml(part.text).replace(/\n/g, "<br>");
+          } else {
+            const b = blankCount++;
+            const opts = part.options
+              .map(
+                (o) =>
+                  `<option value="${escHtml(o)}" ${saved[b] === o ? "selected" : ""}>${escHtml(o)}</option>`,
+              )
+              .join("");
+            html += `<select class="fill-select" onchange="saveDD(${idx}, ${b}, this.value)">
+        <option value="">-- select --</option>${opts}</select>`;
+          }
+        });
+        html += "</div>";
+        return html;
+      }
+
+      function restoreAnswer(q, idx) {
+        // Already handled inline during render
+      }
+
+      // ============================================================
+      // SAVE ANSWERS
+      // ============================================================
+      function saveMC(idx, val) {
+        userAnswers[idx] = val;
+        document.querySelectorAll(`.mc-option`).forEach((el, i) => {
+          el.classList.toggle("selected", i === val);
+        });
+        saveProgress();
+      }
+
+      function saveTF(idx, row, val) {
+        if (!userAnswers[idx]) userAnswers[idx] = {};
+        userAnswers[idx][row] = val;
+        saveProgress();
+      }
+
+      function saveDD(idx, blank, val) {
+        if (!userAnswers[idx]) userAnswers[idx] = {};
+        userAnswers[idx][blank] = val;
+        saveProgress();
+      }
+
+      // ============================================================
+      // NAV
+      // ============================================================
+      function updateNavButtons(idx) {
+        const btnPrev = document.getElementById("btn-prev");
+        const btnNext = document.getElementById("btn-next");
+        const navLabel = document.getElementById("nav-label");
+        btnPrev.disabled = idx === 0;
+        btnPrev.style.opacity = idx === 0 ? ".4" : "1";
+        if (idx === questions.length - 1) {
+          btnNext.textContent = "Submit Exam";
+          btnNext.classList.add("btn-primary");
+        } else {
+          btnNext.textContent = "Next →";
+        }
+        navLabel.textContent = `${idx + 1} / ${questions.length}`;
+      }
+
+      function updateHeader() {
+        const idx = currentQ;
+        document.getElementById("q-counter").textContent =
+          `${idx + 1} / ${questions.length}`;
+        const pct = (idx / questions.length) * 100;
+        document.getElementById("progress-bar").style.width = pct + "%";
+      }
+
+      function prevQ() {
+        if (currentQ > 0) {
+          currentQ--;
+          saveProgress();
+          renderQuestion(currentQ);
+          updateHeader();
+          window.scrollTo(0, 0);
+        }
+      }
+
+      function nextQ() {
+        if (currentQ < questions.length - 1) {
+          currentQ++;
+          saveProgress();
+          renderQuestion(currentQ);
+          updateHeader();
+          window.scrollTo(0, 0);
+        } else {
+          showResults();
+        }
+      }
+
+      // ============================================================
+      // SCORING & RESULTS
+      // ============================================================
+      function scoreQuestion(q, idx) {
+        const ans = userAnswers[idx];
+        if (q.type === "multiple-choice") {
+          if (ans === undefined) return { earned: 0, max: 1, correct: false };
+          return {
+            earned: ans === q.answer ? 1 : 0,
+            max: 1,
+            correct: ans === q.answer,
+          };
+        }
+        if (q.type === "true-false" || q.type === "yes-no") {
+          const saved = ans || {};
+          let earned = 0;
+          q.answers.forEach((a, i) => {
+            if (saved[i] === a) earned++;
+          });
+          return {
+            earned,
+            max: q.answers.length,
+            partial: earned > 0 && earned < q.answers.length,
+            correct: earned === q.answers.length,
+          };
+        }
+        if (q.type === "dropdown") {
+          const saved = ans || {};
+          let blanks = 0,
+            earned = 0;
+          q.template.forEach((part) => {
+            if (part.blank !== undefined) {
+              blanks++;
+              if (saved[part.blank] === part.answer) earned++;
+            }
+          });
+          return {
+            earned,
+            max: blanks,
+            partial: earned > 0 && earned < blanks,
+            correct: earned === blanks,
+          };
+        }
+        return { earned: 0, max: 1, correct: false };
+      }
+
+      function showResults() {
+        document.getElementById("nav-bar").classList.add("hidden");
+        showScreen("screen-results");
+        window.scrollTo(0, 0);
+
+        let totalEarned = 0,
+          totalMax = 0;
+        questions.forEach((q, i) => {
+          const s = scoreQuestion(q, i);
+          totalEarned += s.earned;
+          totalMax += s.max;
+        });
+        const pct = Math.round((totalEarned / totalMax) * 100);
+
+        const circle = document.getElementById("score-circle");
+        document.getElementById("score-pct").textContent = pct + "%";
+        document.getElementById("score-frac").textContent =
+          `${totalEarned} / ${totalMax} pts`;
+        document.getElementById("result-name").textContent = studentName;
+
+        let grade, msg;
+        if (pct >= 90) {
+          grade = "grade-A";
+          msg = "Excellent work! You're well prepared.";
+        } else if (pct >= 75) {
+          grade = "grade-B";
+          msg = "Good job! Review the missed items.";
+        } else if (pct >= 60) {
+          grade = "grade-C";
+          msg = "Keep studying — review the explanations below.";
+        } else {
+          grade = "grade-F";
+          msg = "More practice needed. Go through each answer carefully.";
+        }
+
+        circle.className = "score-circle " + grade;
+        document.getElementById("score-msg").textContent = msg;
+
+        stopAntiCheat();
+
+        // Review rendered immediately — score save happens in background
+        const rc = document.getElementById("review-container");
+        rc.innerHTML = questions.map((q, i) => buildReview(q, i)).join("");
+
+        // Save score to server (background — don't block the results view)
+        const saveStatus = document.getElementById("save-status");
+        saveStatus.textContent = "Saving score...";
+        saveStatus.style.color = "var(--muted)";
+        fetch("/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: studentName,
+            score: totalEarned,
+            total: totalMax,
+            percent: pct + "%",
+            violations,
+            batch: "Batch 1",
+          }),
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            if (data.ok) {
+              saveStatus.textContent = "Score saved!";
+              saveStatus.style.color = "var(--success)";
+              clearProgress();
+            } else {
+              saveStatus.textContent = "Could not save score (server error).";
+              saveStatus.style.color = "var(--danger)";
+            }
+          })
+          .catch(() => {
+            saveStatus.textContent =
+              "Could not save score — server not running.";
+            saveStatus.style.color = "var(--danger)";
+          });
+      }
+
+      function buildReview(q, idx) {
+        const s = scoreQuestion(q, idx);
+        const ans = userAnswers[idx];
+
+        let badge;
+        if (s.correct) badge = '<span class="correct-badge">✓ Correct</span>';
+        else if (s.earned > 0)
+          badge = `<span class="partial-badge">~ Partial (${s.earned}/${s.max})</span>`;
+        else badge = '<span class="wrong-badge">✗ Incorrect</span>';
+
+        let qHtml = `<div class="q-card review-item">
+    <div class="q-label">Question ${idx + 1} &mdash; ${typeLabel(q.type)}</div>
+    ${badge}
+    <div class="q-text">${formatText(q.prompt)}</div>`;
+
+        if (q.code) qHtml += `<pre>${escHtml(q.code)}</pre>`;
+
+        // Correct answer display
+        if (q.type === "multiple-choice") {
+          qHtml += `<div class="answer-block"><strong>Correct Answer:</strong> ${String.fromCharCode(65 + q.answer)}. ${formatText(q.options[q.answer])}</div>`;
+          if (ans !== undefined && ans !== q.answer) {
+            qHtml += `<div class="answer-block your-answer-block"><strong>Your Answer:</strong> ${String.fromCharCode(65 + ans)}. ${formatText(q.options[ans])}</div>`;
+          }
+        } else if (q.type === "true-false" || q.type === "yes-no") {
+          const saved = ans || {};
+          const opt1 = q.type === "true-false" ? "True" : "Yes";
+          const opt2 = q.type === "true-false" ? "False" : "No";
+          let tbl = `<table class="tf-table" style="margin-top:8px;"><thead><tr><th>Statement</th><th>${opt1}</th><th>${opt2}</th><th>Correct</th><th>Yours</th></tr></thead><tbody>`;
+          q.rows.forEach((row, r) => {
+            const correct = q.answers[r];
+            const yours = saved[r] || "—";
+            const ok = yours === correct;
+            tbl += `<tr style="background:${ok ? "#f0fdf4" : "#fff5f5"}">
+        <td>${formatText(row)}</td>
+        <td style="text-align:center">${correct === opt1 ? "✓" : ""}</td>
+        <td style="text-align:center">${correct === opt2 ? "✓" : ""}</td>
+        <td style="text-align:center;color:var(--success);font-weight:600">${correct}</td>
+        <td style="text-align:center;color:${ok ? "var(--success)" : "var(--danger)"};font-weight:600">${yours}</td>
+      </tr>`;
+          });
+          tbl += "</tbody></table>";
+          qHtml += tbl;
+        } else if (q.type === "dropdown") {
+          const saved = ans || {};
+          let blankIdx = 0;
+          let correctCode = "",
+            yourCode = "";
+          q.template.forEach((part) => {
+            if (part.text !== undefined) {
+              correctCode += part.text;
+              yourCode += part.text;
+            } else {
+              const b = blankIdx++;
+              correctCode += `[${part.answer}]`;
+              const yours = saved[b] || "___";
+              yourCode += `[${yours}]`;
+            }
+          });
+          qHtml += `<div class="answer-block"><strong>Correct:</strong><pre style="margin:4px 0 0;background:none;">${escHtml(correctCode)}</pre></div>`;
+          if (!s.correct) {
+            qHtml += `<div class="answer-block your-answer-block"><strong>Your answers:</strong><pre style="margin:4px 0 0;background:none;">${escHtml(yourCode)}</pre></div>`;
+          }
+        }
+
+        qHtml += "</div>";
+        return qHtml;
+      }
+    </script>
+  </body>
+</html>
