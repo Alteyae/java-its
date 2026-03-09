@@ -55,6 +55,26 @@ def admin():
     return send_from_directory(app.static_folder, "admin.html")
 
 
+@app.route("/batch1")
+def batch1():
+    return send_from_directory(app.static_folder, "index-batch1.html")
+
+
+@app.route("/batch2")
+def batch2():
+    return send_from_directory(app.static_folder, "index-batch2.html")
+
+
+@app.route("/batch3")
+def batch3():
+    return send_from_directory(app.static_folder, "index-batch3.html")
+
+
+@app.route("/batch4")
+def batch4():
+    return send_from_directory(app.static_folder, "index.html")
+
+
 @app.route("/submit", methods=["POST", "OPTIONS"])
 def submit():
     if request.method == "OPTIONS":
