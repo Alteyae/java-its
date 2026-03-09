@@ -1,0 +1,2750 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <title>Java ITS Reviewer — Batch 4</title>
+    <style>
+      :root {
+        --primary: #1a73e8;
+        --primary-dark: #1557b0;
+        --success: #34a853;
+        --danger: #ea4335;
+        --warn: #fbbc04;
+        --bg: #f8f9fa;
+        --card: #ffffff;
+        --border: #dadce0;
+        --text: #202124;
+        --muted: #5f6368;
+      }
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: "Segoe UI", system-ui, sans-serif;
+        font-size: 17px;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+      }
+      header {
+        background: var(--primary);
+        color: #fff;
+        padding: 18px 28px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+      }
+      header h1 {
+        font-size: 1.35rem;
+        font-weight: 700;
+      }
+      #progress-bar-wrap {
+        width: 100%;
+        height: 5px;
+        background: rgba(255, 255, 255, 0.3);
+        position: absolute;
+        bottom: 0;
+        left: 0;
+      }
+      #progress-bar {
+        height: 100%;
+        background: #fff;
+        transition: width 0.3s;
+      }
+      #q-counter {
+        font-size: 1rem;
+        opacity: 0.9;
+        white-space: nowrap;
+        margin-left: 16px;
+        font-weight: 600;
+      }
+
+      main {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 32px 20px 100px;
+      }
+
+      /* Screens */
+      .screen {
+        display: none;
+      }
+      .screen.active {
+        display: block;
+      }
+
+      /* Start screen */
+      #screen-start {
+        text-align: center;
+        padding-top: 48px;
+      }
+      #screen-start h2 {
+        font-size: 2.4rem;
+        margin-bottom: 10px;
+        font-weight: 700;
+      }
+      #screen-start p {
+        color: var(--muted);
+        margin-bottom: 28px;
+        font-size: 1.15rem;
+        line-height: 1.6;
+      }
+      .name-input-wrap {
+        margin: 0 auto 28px;
+        max-width: 380px;
+        text-align: left;
+      }
+      .name-input-wrap label {
+        display: block;
+        font-weight: 700;
+        margin-bottom: 8px;
+        font-size: 1rem;
+        color: var(--text);
+      }
+      .name-input-wrap input {
+        width: 100%;
+        padding: 14px 16px;
+        border: 2px solid var(--border);
+        border-radius: 10px;
+        font-size: 1.05rem;
+        outline: none;
+        transition: border-color 0.2s;
+      }
+      .name-input-wrap input:focus {
+        border-color: var(--primary);
+      }
+      .name-input-wrap input.error {
+        border-color: var(--danger);
+      }
+      .name-error {
+        color: var(--danger);
+        font-size: 0.9rem;
+        margin-top: 5px;
+        display: none;
+      }
+      .btn {
+        display: inline-block;
+        padding: 14px 36px;
+        border-radius: 10px;
+        border: none;
+        cursor: pointer;
+        font-size: 1.05rem;
+        font-weight: 700;
+        transition:
+          background 0.2s,
+          transform 0.1s;
+      }
+      .btn:active {
+        transform: scale(0.97);
+      }
+      .btn-primary {
+        background: var(--primary);
+        color: #fff;
+      }
+      .btn-primary:hover {
+        background: var(--primary-dark);
+      }
+      .btn-secondary {
+        background: #fff;
+        color: var(--primary);
+        border: 2px solid var(--primary);
+      }
+
+      /* Question card */
+      .q-card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 28px 32px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
+      }
+      .q-label {
+        font-size: 0.85rem;
+        font-weight: 700;
+        color: var(--primary);
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        margin-bottom: 10px;
+      }
+      .q-text {
+        font-size: 1.08rem;
+        line-height: 1.7;
+        margin-bottom: 20px;
+      }
+      pre,
+      code {
+        font-family: "Courier New", monospace;
+        font-size: 0.95rem;
+        background: #f1f3f4;
+        border-radius: 8px;
+      }
+      pre {
+        padding: 16px 20px;
+        overflow-x: auto;
+        white-space: pre;
+        margin: 14px 0;
+        line-height: 1.6;
+      }
+      code {
+        padding: 3px 6px;
+      }
+
+      /* Multiple choice */
+      .mc-option {
+        display: flex;
+        align-items: flex-start;
+        gap: 14px;
+        padding: 16px 20px;
+        border: 2px solid var(--border);
+        border-radius: 10px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
+        user-select: none;
+        font-size: 1.05rem;
+      }
+      .mc-option:hover {
+        border-color: var(--primary);
+        background: #f0f6ff;
+      }
+      .mc-option.selected {
+        border-color: var(--primary);
+        background: #e8f0fe;
+      }
+      .mc-option input[type="radio"] {
+        margin-top: 3px;
+        accent-color: var(--primary);
+        width: 18px;
+        height: 18px;
+      }
+      .mc-label {
+        font-weight: 700;
+        color: var(--primary);
+        min-width: 24px;
+        font-size: 1.05rem;
+      }
+
+      /* Table-based (Yes/No, True/False) */
+      .tf-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+      .tf-table th {
+        background: #f1f3f4;
+        padding: 12px 14px;
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-align: center;
+        border: 1px solid var(--border);
+      }
+      .tf-table th:first-child {
+        text-align: left;
+      }
+      .tf-table td {
+        padding: 13px 14px;
+        border: 1px solid var(--border);
+        vertical-align: middle;
+        font-size: 1rem;
+        line-height: 1.5;
+      }
+      .tf-table td:not(:first-child) {
+        text-align: center;
+      }
+      .tf-table tr:hover td {
+        background: #fafafa;
+      }
+      .tf-table input[type="radio"] {
+        accent-color: var(--primary);
+        width: 22px;
+        height: 22px;
+        cursor: pointer;
+      }
+
+      /* Dropdown fill-in */
+      .code-block-fill {
+        font-family: "Courier New", monospace;
+        font-size: 0.95rem;
+        background: #f1f3f4;
+        border-radius: 8px;
+        padding: 16px 20px;
+        line-height: 2;
+        overflow-x: auto;
+      }
+      select.fill-select {
+        font-family: "Courier New", monospace;
+        font-size: 0.93rem;
+        padding: 4px 8px;
+        border: 2px solid var(--primary);
+        border-radius: 6px;
+        background: #fff;
+        color: var(--text);
+        cursor: pointer;
+        max-width: 280px;
+      }
+
+      /* Nav */
+      #nav-bar {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: #fff;
+        border-top: 1px solid var(--border);
+        padding: 14px 28px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 100;
+        box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.06);
+      }
+      #nav-bar.hidden {
+        display: none;
+      }
+      #btn-prev {
+        background: #f1f3f4;
+        color: var(--text);
+      }
+      #btn-prev:hover {
+        background: #e8eaed;
+      }
+      #btn-next {
+        min-width: 120px;
+      }
+
+      /* Results */
+      #screen-results {
+        text-align: center;
+      }
+      .score-circle {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        margin: 24px auto;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.4rem;
+        font-weight: 700;
+        color: #fff;
+      }
+      .score-circle small {
+        font-size: 0.9rem;
+        font-weight: 400;
+      }
+      .grade-A {
+        background: var(--success);
+      }
+      .grade-B {
+        background: #34a853cc;
+      }
+      .grade-C {
+        background: var(--warn);
+        color: #333;
+      }
+      .grade-F {
+        background: var(--danger);
+      }
+
+      .review-item {
+        text-align: left;
+        margin-bottom: 24px;
+      }
+      .review-item .q-label {
+        margin-bottom: 4px;
+      }
+      .correct-badge,
+      .wrong-badge,
+      .partial-badge {
+        display: inline-block;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 2px 10px;
+        border-radius: 20px;
+        margin-bottom: 8px;
+      }
+      .correct-badge {
+        background: #e6f4ea;
+        color: var(--success);
+      }
+      .wrong-badge {
+        background: #fce8e6;
+        color: var(--danger);
+      }
+      .partial-badge {
+        background: #fef7e0;
+        color: #b06000;
+      }
+
+      .answer-block {
+        background: #f8f9fa;
+        border-left: 3px solid var(--success);
+        padding: 8px 12px;
+        border-radius: 0 6px 6px 0;
+        font-size: 0.9rem;
+        margin-top: 8px;
+      }
+      .answer-block strong {
+        color: var(--success);
+      }
+      .your-answer-block {
+        border-left-color: var(--danger);
+      }
+      .your-answer-block strong {
+        color: var(--danger);
+      }
+
+      @media (max-width: 600px) {
+        header h1 {
+          font-size: 1rem;
+        }
+        .q-card {
+          padding: 14px 12px;
+        }
+        .tf-table td,
+        .tf-table th {
+          padding: 10px 6px;
+          font-size: 0.85rem;
+        }
+        .tf-table input[type="radio"] {
+          width: 22px;
+          height: 22px;
+        }
+        .mc-option {
+          padding: 14px 12px;
+        }
+        .btn {
+          padding: 14px 24px;
+          font-size: 1rem;
+          width: 100%;
+        }
+        #nav-bar {
+          padding: 10px 12px;
+          gap: 8px;
+        }
+        #nav-bar .btn {
+          width: auto;
+          flex: 1;
+          padding: 12px 8px;
+          font-size: 0.95rem;
+        }
+        select.fill-select {
+          font-size: 0.8rem;
+          max-width: 200px;
+        }
+        pre {
+          font-size: 0.78rem;
+        }
+      }
+
+      /* Anti-cheat overlay */
+      #cheat-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.85);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        text-align: center;
+        color: #fff;
+        padding: 32px;
+      }
+      #cheat-overlay.show {
+        display: flex;
+      }
+      #cheat-overlay h2 {
+        font-size: 1.8rem;
+        margin-bottom: 12px;
+        color: #f28b82;
+      }
+      #cheat-overlay p {
+        font-size: 1.05rem;
+        color: #e8eaed;
+        margin-bottom: 8px;
+      }
+      #cheat-overlay .warn-count {
+        font-size: 1rem;
+        color: #fbbc04;
+        margin-bottom: 24px;
+        font-weight: 600;
+      }
+      #violation-badge {
+        display: none;
+        position: fixed;
+        top: 12px;
+        right: 16px;
+        background: var(--danger);
+        color: #fff;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 20px;
+        z-index: 200;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Java ITS Reviewer</h1>
+      <span id="q-counter"></span>
+      <div id="progress-bar-wrap">
+        <div id="progress-bar" style="width: 0%"></div>
+      </div>
+    </header>
+
+    <!-- START SCREEN -->
+    <main>
+      <div id="screen-start" class="screen active">
+        <h2>Java ITS Reviewer</h2>
+        <p>
+          50 practice questions covering Java fundamentals.<br />Answer all
+          questions, then review your results at the end.
+        </p>
+
+        <!-- Resume banner (hidden by default) -->
+        <div
+          id="resume-banner"
+          style="
+            display: none;
+            background: #e8f0fe;
+            border: 1px solid #c5d8fb;
+            border-radius: 10px;
+            padding: 16px 20px;
+            max-width: 400px;
+            margin: 0 auto 24px;
+            text-align: left;
+          "
+        >
+          <p style="font-weight: 600; margin-bottom: 4px">Resume your exam?</p>
+          <p
+            style="font-size: 0.9rem; color: var(--muted); margin-bottom: 12px"
+          >
+            <span id="resume-name"></span> &mdash;
+            <span id="resume-qnum"></span>
+          </p>
+          <button
+            id="btn-resume"
+            class="btn btn-primary"
+            style="margin-right: 8px; padding: 8px 20px"
+          >
+            Resume
+          </button>
+          <button
+            id="btn-start-fresh"
+            class="btn btn-secondary"
+            style="padding: 8px 20px"
+          >
+            Start Fresh
+          </button>
+        </div>
+
+        <div class="name-input-wrap">
+          <label for="student-name">Your Full Name</label>
+          <input
+            type="text"
+            id="student-name"
+            placeholder="e.g. Juan dela Cruz"
+            autocomplete="name"
+            maxlength="80"
+          />
+          <div class="name-error" id="name-error">
+            Please enter your name before starting.
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="startExam()">
+          Start Exam
+        </button>
+      </div>
+
+      <!-- QUESTION SCREEN -->
+      <div id="screen-question" class="screen">
+        <div id="question-container"></div>
+      </div>
+
+      <!-- RESULTS SCREEN -->
+      <div id="screen-results" class="screen">
+        <div class="q-card" style="text-align: center; padding: 32px">
+          <h2>Exam Complete!</h2>
+          <p
+            style="font-size: 1.1rem; font-weight: 600; margin-top: 4px"
+            id="result-name"
+          ></p>
+          <div id="score-circle" class="score-circle grade-A">
+            <span id="score-pct">0%</span>
+            <small id="score-frac"></small>
+          </div>
+          <p
+            id="score-msg"
+            style="font-size: 1.1rem; color: var(--muted); margin-bottom: 12px"
+          ></p>
+          <p
+            id="save-status"
+            style="font-size: 0.9rem; margin-bottom: 16px"
+          ></p>
+          <button class="btn btn-secondary" onclick="retakeExam()">
+            Retake Exam
+          </button>
+        </div>
+        <div id="review-container"></div>
+      </div>
+    </main>
+
+    <!-- Anti-cheat overlay -->
+    <div id="cheat-overlay">
+      <h2>⚠ You left the exam!</h2>
+      <p>
+        Switching tabs or minimizing the window is not allowed during the exam.
+      </p>
+      <p class="warn-count" id="warn-text"></p>
+      <button class="btn btn-primary" onclick="dismissWarning()">
+        Return to Exam
+      </button>
+    </div>
+    <div id="violation-badge"></div>
+
+    <!-- NAV BAR -->
+    <div id="nav-bar" class="hidden">
+      <button class="btn btn-secondary" id="btn-prev" onclick="prevQ()">
+        ← Previous
+      </button>
+      <span
+        id="nav-label"
+        style="font-size: 0.9rem; color: var(--muted)"
+      ></span>
+      <button class="btn btn-primary" id="btn-next" onclick="nextQ()">
+        Next →
+      </button>
+    </div>
+
+    <script>
+      // ============================================================
+      // QUESTION DATA
+      // ============================================================
+      const questions = [
+        // ── BATCH 4 — 150 questions ──────────────────────────────────────
+{
+          id: 1,
+          type: "multiple-choice",
+          prompt: "You are writing a Java program that stores a patient's age. The age value will never exceed 150. Which data type uses the least amount of memory?",
+          options: ["int", "long", "byte", "short"],
+          answer: 2,
+        },
+        {
+          id: 2,
+          type: "true-false",
+          prompt: "Review each statement about Java primitive data types. Select True or False.",
+          rows: [
+            "A boolean variable can only store the values true or false.",
+            "A char variable can store a whole number like 65.",
+            "A double uses less memory than a float.",
+            "An int can store the value 3,000,000,000.",
+          ],
+          answers: ["True", "True", "False", "False"],
+        },
+        {
+          id: 3,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class CastTest {\n    public static void main(String[] args) {\n        double dNum = 9.99;\n        int iNum = (int) dNum;\n        System.out.println(iNum);\n    }\n}`,
+          options: ["10", "9.99", "9", "Error"],
+          answer: 2,
+        },
+        {
+          id: 4,
+          type: "yes-no",
+          prompt: "Review the following code. For each statement, select Yes if it is valid, or No if it causes a compile error.",
+          code: `public class ScopeTest {\n    static int x = 10;\n    public static void main(String[] args) {\n        int y = 20;\n        System.out.println(x); // line A\n        System.out.println(y); // line B\n    }\n    static void other() {\n        System.out.println(x); // line C\n        System.out.println(y); // line D\n    }\n}`,
+          rows: [
+            "Line A compiles without error.",
+            "Line B compiles without error.",
+            "Line C compiles without error.",
+            "Line D compiles without error.",
+          ],
+          answers: ["Yes", "Yes", "Yes", "No"],
+        },
+        {
+          id: 5,
+          type: "dropdown",
+          prompt: "You are writing a Java program that collects patient information. You need to use the least amount of memory. Which data type should you use for each variable declaration?",
+          template: [
+            { blank: 0, options: ["boolean","byte","char","short","int","long","float","double"], answer: "boolean" },
+            { text: " status = true;\n" },
+            { blank: 1, options: ["boolean","byte","char","short","int","long","float","double"], answer: "char" },
+            { text: " letter = 'A';\n" },
+            { blank: 2, options: ["boolean","byte","char","short","int","long","float","double"], answer: "byte" },
+            { text: " age = 25;\n" },
+            { blank: 3, options: ["boolean","byte","char","short","int","long","float","double"], answer: "short" },
+            { text: " year = 2024;\n" },
+            { blank: 4, options: ["boolean","byte","char","short","int","long","float","double"], answer: "float" },
+            { text: " pi = 3.14f;" },
+          ],
+        },
+        {
+          id: 6,
+          type: "multiple-choice",
+          prompt: "What is the output of line 12 when you run printInt()?",
+          code: `public void printInt() {\n    if(true){ int num = 1; if(num > 0) { num++; } }\n    int num = 1;\n    addOne(num);\n    num = num - 1;\n    System.out.println(num); // line 12\n}\npublic void addOne(int num) { num = num + 1; }`,
+          options: ["2", "1", "0", "Compilation error"],
+          answer: 2,
+        },
+        {
+          id: 7,
+          type: "multiple-choice",
+          prompt: "Your instructor asks you to evaluate the following arithmetic expression. What is the value?",
+          code: `(2 + 3) * 4 - 1`,
+          options: ["13", "19", "11", "20"],
+          answer: 1,
+        },
+        {
+          id: 8,
+          type: "true-false",
+          prompt: "Evaluate each arithmetic expression. Select True if the answer shown is correct, or False if it is incorrect.",
+          rows: [
+            "4 * 4 + 2 * 2 = 20",
+            "8 * 2 % 3 = 1",
+            "5 / 2 - 4 % 2 = 2",
+            "10 / 3 = 3",
+          ],
+          answers: ["True", "True", "True", "True"],
+        },
+        {
+          id: 9,
+          type: "multiple-choice",
+          prompt: "What is the output of line 04 and line 06? (v=5, x=10)",
+          code: `01 int v = 5;\n02 int x = 10;\n03 int y = ++v * x--;\n04 System.out.println(y);\n05 int z = v-- + ++x;\n06 System.out.println(z);`,
+          options: ["60 and 16", "60 and 15", "50 and 16", "50 and 15"],
+          answer: 0,
+        },
+        {
+          id: 10,
+          type: "multiple-choice",
+          prompt: "What is the output of line 05?",
+          code: `01 double number = 27;\n02 number %= -3d;\n03 number += 10f;\n04 number *= -4;\n05 System.out.println(number);`,
+          options: ["-40.0", "40.0", "-36.0", "36.0"],
+          answer: 0,
+        },
+        {
+          id: 11,
+          type: "dropdown",
+          prompt: "Traders hires you to write a Java program to manage account openings. To open a new account, a user must be over 65 AND have income >= 10,000 OR be at least 21 AND have income > 25,000. Complete the if statement:",
+          template: [
+            { text: "if ((age " },
+            { blank: 0, options: ["!=","&&","<","<=","==",">",">=","||"], answer: ">=" },
+            { text: " 65 " },
+            { blank: 1, options: ["!=","&&","<","<=","==",">",">=","||"], answer: "&&" },
+            { text: " income " },
+            { blank: 2, options: ["!=","&&","<","<=","==",">",">=","||"], answer: ">=" },
+            { text: " 10000) " },
+            { blank: 3, options: ["!=","&&","<","<=","==",">",">=","||"], answer: "||" },
+            { text: " (age " },
+            { blank: 4, options: ["!=","&&","<","<=","==",">",">=","||"], answer: ">=" },
+            { text: " 21 " },
+            { blank: 5, options: ["!=","&&","<","<=","==",">",">=","||"], answer: "&&" },
+            { text: " income " },
+            { blank: 6, options: ["!=","&&","<","<=","==",">",">=","||"], answer: ">" },
+            { text: " 25000))" },
+          ],
+        },
+        {
+          id: 12,
+          type: "yes-no",
+          prompt: "For each if-else block, select Yes if it can be converted to a switch statement with up to three cases, or No if it cannot.",
+          rows: [
+            "if(age >= 25) { discount=0.50; } else if(age >= 21) { discount=0.25; } else { discount=0.0; }",
+            "if(grades == 'A') { msg='Exceeds'; } else if(grades == 'B') { msg='Meets'; } else { msg='Needs Improvement'; }",
+            "if(gpa == 4.0) { priority=1; } else if(gpa >= 3.0) { priority=2; } else if(gpa >= 2.5) { priority=3; }",
+          ],
+          answers: ["No", "Yes", "No"],
+        },
+        {
+          id: 13,
+          type: "multiple-choice",
+          prompt: "What is the return value when model has a value of 'K'? (Note: case 'K' has no break — it falls through to case 'I')",
+          code: `public static int foo(char model){\n    int price = 0;\n    switch(model){\n        case 'A': price = 50; break;\n        case 'K': price -= 20;\n        case 'I': price = 5; break;\n        default: price = 100; break;\n    }\n    return price;\n}`,
+          options: ["50", "-20", "5", "100"],
+          answer: 2,
+        },
+        {
+          id: 14,
+          type: "true-false",
+          prompt: "Using the foo(char model) method, select True or False for each return value statement.",
+          rows: [
+            "When model is 'A', the return value is 50.",
+            "When model is 'K', the return value is -20.",
+            "When model is 'I', the return value is 5.",
+            "When model is any other char, the return value is 100.",
+          ],
+          answers: ["True", "False", "True", "True"],
+        },
+        {
+          id: 15,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class LoopTest {\n    public static void main(String[] args) {\n        for (int i = 1; i <= 5; i++) {\n            if (i % 2 == 0)\n                System.out.print(i + " ");\n        }\n    }\n}`,
+          options: ["1 3 5", "2 4", "1 2 3 4 5", "2 4 6"],
+          answer: 1,
+        },
+        {
+          id: 16,
+          type: "dropdown",
+          prompt: "The program is supposed to count down from 60. Fix the while condition and the decrement.",
+          template: [
+            { text: "int timer = 60;\nwhile (timer " },
+            { blank: 0, options: [">= 0", "> 0", "== 0", "<= 60"], answer: ">= 0" },
+            { text: ") {\n    if (timer == 0) break;\n    else {\n        System.out.println(\"Counting down...\");\n        timer" },
+            { blank: 1, options: ["--", "++", "-= 2", "+= 1"], answer: "--" },
+            { text: ";\n    }\n}" },
+          ],
+        },
+        {
+          id: 17,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class DoWhileTest {\n    public static void main(String[] args) {\n        int i = 10;\n        do {\n            System.out.print(i + " ");\n            i -= 3;\n        } while (i > 0);\n    }\n}`,
+          options: ["10 7 4 1", "10 7 4", "7 4 1", "10 7 4 1 -2"],
+          answer: 0,
+        },
+        {
+          id: 18,
+          type: "true-false",
+          prompt: "Review the following code. Select True or False for each statement.",
+          code: `int sum = 0;\nfor (int i = 0; i < 10; i++) {\n    if (i == 5) break;\n    sum += i;\n}\nSystem.out.println(sum);`,
+          rows: [
+            "The loop iterates exactly 5 times before break is executed.",
+            "The value of sum when printed is 10.",
+            "The value of sum when printed is 15.",
+            "The break statement exits the entire program.",
+          ],
+          answers: ["True", "True", "False", "False"],
+        },
+        {
+          id: 19,
+          type: "multiple-choice",
+          prompt: "You are working on a method to display all of the company regions. An array has been defined. Which code block correctly finishes the method?",
+          code: `String[] regions = {"North", "South", "East", "West"};`,
+          options: [
+            "for(String region : regions) { System.out.println(region); }",
+            "for(int i = 0; i <= regions.length; i++) { System.out.println(regions[i]); }",
+            "while(regions.hasNext()) { System.out.println(regions.next()); }",
+            "foreach(String region in regions) { System.out.println(region); }",
+          ],
+          answer: 0,
+        },
+        {
+          id: 20,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class NestLoop {\n    public static void main(String[] args) {\n        int count = 0;\n        for (int i = 0; i < 3; i++)\n            for (int j = 0; j < 3; j++)\n                if (i == j) count++;\n        System.out.println(count);\n    }\n}`,
+          options: ["9", "6", "3", "0"],
+          answer: 2,
+        },
+        {
+          id: 21,
+          type: "dropdown",
+          prompt: "You need to create an int array named grades initialized with val1, val2, and val3. How should you complete the code?",
+          template: [
+            { text: "int val1 = 1; int val2 = 2; int val3 = 3;\n" },
+            { blank: 0, options: ["int[]","int","int[][]","Integer[]"], answer: "int[]" },
+            { text: " grades = " },
+            { blank: 1, options: ["new int[]","new int","new Integer[]","new int[3]"], answer: "new int[]" },
+            { text: " {val1, val2, val3};" },
+          ],
+        },
+        {
+          id: 22,
+          type: "yes-no",
+          prompt: "You have: int[] nums = {10, 20, 30, 40, 50}; For each statement, select Yes if the result is correct, or No if it causes an error.",
+          rows: [
+            "nums[0] returns 10.",
+            "nums[4] returns 50.",
+            "nums[5] causes an ArrayIndexOutOfBoundsException.",
+            "nums.length returns 4.",
+          ],
+          answers: ["Yes", "Yes", "Yes", "No"],
+        },
+        {
+          id: 23,
+          type: "true-false",
+          prompt: "You declare arrays below. Select True or False for each statement about their default values.",
+          code: `int[] a = new int[3];\nboolean[] b = new boolean[2];\nString[] s = new String[2];`,
+          rows: [
+            "a[0] has a default value of 0.",
+            "b[0] has a default value of false.",
+            "s[0] has a default value of empty string.",
+            "s[1] has a default value of null.",
+          ],
+          answers: ["True", "True", "False", "True"],
+        },
+        {
+          id: 24,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class ArrayTest {\n    public static void main(String[] args) {\n        int[] nums = {5, 10, 15, 20};\n        int sum = 0;\n        for (int n : nums) sum += n;\n        System.out.println(sum);\n    }\n}`,
+          options: ["40", "50", "45", "55"],
+          answer: 1,
+        },
+        {
+          id: 25,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class ArrayCopy {\n    public static void main(String[] args) {\n        int[] a = {1, 2, 3};\n        int[] b = a;\n        b[0] = 99;\n        System.out.println(a[0]);\n    }\n}`,
+          options: ["1", "99", "0", "Compilation error"],
+          answer: 1,
+        },
+        {
+          id: 26,
+          type: "dropdown",
+          prompt: "You need to declare a 2 by 3 array of the double type with initial values. How should you complete the code?",
+          template: [
+            { blank: 0, options: ["double[][]","double[]","double","double[2][3]"], answer: "double[][]" },
+            { text: " maxArray = {{0.77, 3.4, 55}, {2.2, .645, 2}};" },
+          ],
+        },
+        {
+          id: 27,
+          type: "multiple-choice",
+          prompt: "You are developing a Java program to play Tic-Tac-Toe. You define the following array. Which array element contains an 'X'?",
+          code: `char grid[][] = {{'_','_','X'},\n                 {'_','_','_'},\n                 {'_','O','_'}};`,
+          options: ["grid[0][0]", "grid[2][1]", "grid[0][2]", "grid[1][2]"],
+          answer: 2,
+        },
+        {
+          id: 28,
+          type: "dropdown",
+          prompt: "The method accepts a two-dimensional String array and prints the content of each element. The size of each dimension might be different. How should you complete the code?",
+          template: [
+            { text: "public void traverse(String[][] board) {\n    for (int x = 0; x < " },
+            { blank: 0, options: ["board.length","board[0].length","board.size()","board[x].length"], answer: "board.length" },
+            { text: "; x++)\n        for (int y = 0; y < " },
+            { blank: 1, options: ["board[x].length","board.length","board[0].length","board.size()"], answer: "board[x].length" },
+            { text: "; y++)\n            System.out.println(board[x][y]);\n}" },
+          ],
+        },
+        {
+          id: 29,
+          type: "true-false",
+          prompt: "You have: int[][] grid = new int[3][4]; Select True or False for each statement.",
+          rows: [
+            "grid.length returns 3.",
+            "grid[0].length returns 4.",
+            "grid[2][3] is a valid element.",
+            "grid[3][0] is a valid element.",
+          ],
+          answers: ["True", "True", "True", "False"],
+        },
+        {
+          id: 30,
+          type: "multiple-choice",
+          prompt: "You are trying to retrieve the lowest golf score in row 1. Which expression returns 79?",
+          code: `static int[][] golfScores = new int[][] {\n    {83, 81, 85},\n    {79, 82, 87}\n};`,
+          options: ["golfScores[0][0]", "golfScores[1][1]", "golfScores[1][0]", "golfScores[0][1]"],
+          answer: 2,
+        },
+        {
+          id: 31,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class MethodTest {\n    static int square(int n) { return n * n; }\n    public static void main(String[] args) {\n        System.out.println(square(7));\n    }\n}`,
+          options: ["7", "14", "49", "Compilation error"],
+          answer: 2,
+        },
+        {
+          id: 32,
+          type: "true-false",
+          prompt: "Review the Calc class. Select True or False for each statement about method overloading.",
+          code: `public class Calc {\n    int add(int a, int b) { return a + b; }\n    double add(double a, double b) { return a + b; }\n    int add(int a, int b, int c) { return a + b + c; }\n}`,
+          rows: [
+            "The three add methods are overloaded.",
+            "add(1, 2) returns an int value of 3.",
+            "add(1.5, 2.5) returns a double value of 4.0.",
+            "Overloaded methods must have different return types.",
+          ],
+          answers: ["True", "True", "True", "False"],
+        },
+        {
+          id: 33,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class VoidTest {\n    static void greet(String name) {\n        System.out.println("Hello, " + name + "!");\n    }\n    public static void main(String[] args) {\n        greet("Maria");\n    }\n}`,
+          options: ["Hello!", "Hello, Maria!", "greet(Maria)", "Compilation error"],
+          answer: 1,
+        },
+        {
+          id: 34,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program? (Java passes primitives by value)",
+          code: `public class PassVal {\n    static void doubleIt(int x) { x = x * 2; }\n    public static void main(String[] args) {\n        int num = 5;\n        doubleIt(num);\n        System.out.println(num);\n    }\n}`,
+          options: ["10", "5", "0", "Compilation error"],
+          answer: 1,
+        },
+        {
+          id: 35,
+          type: "dropdown",
+          prompt: "You need to create a static method negativeSquare that accepts an int, raises it to the second power, and returns the negative value of the result.",
+          template: [
+            { text: "public static int negativeSquare(int number) {\n    return " },
+            { blank: 0, options: ["-(number*number)","number*number","-(number+number)","Math.pow(number,2)"], answer: "-(number*number)" },
+            { text: ";\n}" },
+          ],
+        },
+        {
+          id: 36,
+          type: "yes-no",
+          prompt: "For each method signature, select Yes if it is valid Java syntax, or No if it causes a compilation error.",
+          rows: [
+            "public static void main(String[] args) { }",
+            "static int add(int a, int b) { return a + b; }",
+            "void print() { System.out.println(); return 5; }",
+            "private double calc(double x) { return x * 2; }",
+          ],
+          answers: ["Yes", "Yes", "No", "Yes"],
+        },
+        {
+          id: 37,
+          type: "multiple-choice",
+          prompt: "You work on a team that develops e-commerce applications. A member of the team creates a class named DB that has a method named query. You need to instantiate DB and invoke query. How should you complete the code?",
+          options: [
+            "DB.query db = new DB(); DB.query();",
+            "DB db = new DB(); db.query();",
+            "new DB db = query(); db.run();",
+            "DB db = DB.new(); db.query();",
+          ],
+          answer: 1,
+        },
+        {
+          id: 38,
+          type: "true-false",
+          prompt: "You work for Woodgrove Bank. Evaluate the Account class. Select True or False for each statement.",
+          code: `public class Account {\n    protected int balance;\n    public Account() { balance = 0; }\n    public Account(int amount) { balance = amount; }\n}`,
+          rows: [
+            "The Account class has a single constructor.",
+            "Other classes can inherit the Account class.",
+            "balance = amount is equivalent to this.balance = amount.",
+            "The default constructor sets balance to 0.",
+          ],
+          answers: ["False", "True", "True", "True"],
+        },
+        {
+          id: 39,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `class Car {\n    String model; int year;\n    Car(String m, int y) { model = m; year = y; }\n}\npublic class Main {\n    public static void main(String[] args) {\n        Car c = new Car("Toyota", 2022);\n        System.out.println(c.model + " " + c.year);\n    }\n}`,
+          options: ["Toyota 2022", "null 0", "model year", "Compilation error"],
+          answer: 0,
+        },
+        {
+          id: 40,
+          type: "dropdown",
+          prompt: "You are writing a SavingsAccount class that inherits from Account, uses the base class constructor, and overrides toString(). How should you complete the code?",
+          template: [
+            { text: "public class SavingsAccount " },
+            { blank: 0, options: ["extends Account","implements Account","inherits Account","uses Account"], answer: "extends Account" },
+            { text: " {\n    double rate = 0.02;\n    SavingsAccount(double startingBalance) {\n        " },
+            { blank: 1, options: ["super(startingBalance)","this(startingBalance)","Account(startingBalance)","super.balance = startingBalance"], answer: "super(startingBalance)" },
+            { text: ";\n    }\n    " },
+            { blank: 2, options: ["@Override","@Inherited","@Super","@Extends"], answer: "@Override" },
+            { text: "\n    public String toString() { return String.valueOf(startingBalance); }\n}" },
+          ],
+        },
+        {
+          id: 41,
+          type: "yes-no",
+          prompt: "Review the class hierarchy. For each statement, select Yes if it is true, or No if it is false.",
+          code: `public class Vehicle { String brand; void drive() { System.out.println("Driving"); } }\npublic class Car extends Vehicle { int doors; }`,
+          rows: [
+            "Car inherits the brand field from Vehicle.",
+            "Car inherits the drive() method from Vehicle.",
+            "Vehicle inherits the doors field from Car.",
+            "A Car object can call drive() without overriding it.",
+          ],
+          answers: ["Yes", "Yes", "No", "Yes"],
+        },
+        {
+          id: 42,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `class Animal { void sound() { System.out.println("Generic sound"); } }\nclass Cat extends Animal {\n    @Override void sound() { System.out.println("Meow"); }\n}\npublic class Main {\n    public static void main(String[] args) {\n        Animal a = new Cat();\n        a.sound();\n    }\n}`,
+          options: ["Generic sound", "Meow", "Compilation error", "null"],
+          answer: 1,
+        },
+        {
+          id: 43,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `class Shape { Shape() { System.out.println("Shape created"); } }\nclass Circle extends Shape {\n    Circle() { super(); System.out.println("Circle created"); }\n}\npublic class Main {\n    public static void main(String[] args) { new Circle(); }\n}`,
+          options: ["Circle created", "Shape created then Circle created", "Shape created", "Compilation error"],
+          answer: 1,
+        },
+        {
+          id: 44,
+          type: "true-false",
+          prompt: "Select True or False for each statement about inheritance in Java.",
+          rows: [
+            "A subclass can have only one direct superclass (single inheritance of classes).",
+            "A subclass inherits private fields of the superclass directly.",
+            "The @Override annotation is required to override a method.",
+            "A subclass can add new methods not present in the superclass.",
+          ],
+          answers: ["True", "False", "False", "True"],
+        },
+        {
+          id: 45,
+          type: "dropdown",
+          prompt: "You want to create a class DressShirt that inherits from BaseShirt and adds a style property. How should you complete the class declaration?",
+          template: [
+            { text: "public class DressShirt " },
+            { blank: 0, options: ["extends","implements","inherits","abstract"], answer: "extends" },
+            { text: " BaseShirt {\n    String style;\n    public DressShirt(String size, String sleeve, String color, String style) {\n        " },
+            { blank: 1, options: ["super","this","BaseShirt","super()"], answer: "super" },
+            { text: "(size, sleeve, color);\n        this.style = style;\n    }\n}" },
+          ],
+        },
+        {
+          id: 46,
+          type: "true-false",
+          prompt: "Select True or False for each statement about interfaces in Java.",
+          rows: [
+            "A class can implement multiple interfaces.",
+            "An interface can contain default (concrete) methods in Java 8+.",
+            "An interface can be instantiated directly using new.",
+            "All methods in an interface without a body are implicitly public and abstract.",
+          ],
+          answers: ["True", "True", "False", "True"],
+        },
+        {
+          id: 47,
+          type: "yes-no",
+          prompt: "Select Yes if the statement about abstract classes is correct, or No if it is incorrect.",
+          rows: [
+            "An abstract class can have a constructor.",
+            "An abstract class can be instantiated directly with new.",
+            "A class can extend multiple abstract classes.",
+            "An abstract method has no body in the abstract class.",
+          ],
+          answers: ["Yes", "No", "No", "Yes"],
+        },
+        {
+          id: 48,
+          type: "dropdown",
+          prompt: "The DressShirt class needs to override the displayShirt1() method from BaseShirt. Which annotation should you add?",
+          template: [
+            { text: "public class DressShirt extends BaseShirt {\n    String style;\n    " },
+            { blank: 0, options: ["@Override","@Abstract","@Inherited","@Implement"], answer: "@Override" },
+            { text: "\n    public void displayShirt1() {\n        System.out.println(this.style);\n    }\n}" },
+          ],
+        },
+        {
+          id: 49,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `interface Greetable { String greet(); }\nclass English implements Greetable {\n    public String greet() { return "Hello"; }\n}\npublic class Main {\n    public static void main(String[] args) {\n        Greetable g = new English();\n        System.out.println(g.greet());\n    }\n}`,
+          options: ["greet()", "Hello", "null", "Compilation error"],
+          answer: 1,
+        },
+        {
+          id: 50,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `abstract class Figure {\n    abstract double area();\n    void display() { System.out.println("Area: " + area()); }\n}\nclass Square extends Figure {\n    double side;\n    Square(double s) { side = s; }\n    double area() { return side * side; }\n}\npublic class Main {\n    public static void main(String[] args) {\n        Figure f = new Square(4);\n        f.display();\n    }\n}`,
+          options: ["Area: 16.0", "Area: 8.0", "Area: 4.0", "Compilation error"],
+          answer: 0,
+        },
+        {
+          id: 51,
+          type: "true-false",
+          prompt: "Review the exception handling code. Select True or False for each output statement.",
+          code: `try {\n    int x = 1/0;\n    System.out.println("try");\n} catch (ArithmeticException ex) {\n    System.out.println("catch ArithmeticException");\n} catch (Exception ex) {\n    System.out.println("catch Exception");\n} finally {\n    System.out.println("finally");\n}`,
+          rows: [
+            "The program will display try.",
+            "The program will display catch ArithmeticException.",
+            "The program will display catch Exception.",
+            "The program will display finally.",
+          ],
+          answers: ["False", "True", "False", "True"],
+        },
+        {
+          id: 52,
+          type: "multiple-choice",
+          prompt: "Which exception is thrown when you try to access an array element at an invalid index?",
+          options: [
+            "NullPointerException",
+            "ArithmeticException",
+            "ArrayIndexOutOfBoundsException",
+            "ClassCastException",
+          ],
+          answer: 2,
+        },
+        {
+          id: 53,
+          type: "yes-no",
+          prompt: "Select Yes if the statement about Java exceptions is correct, or No if it is not.",
+          rows: [
+            "The finally block always executes whether or not an exception is thrown.",
+            "A checked exception must be declared in a throws clause or caught.",
+            "RuntimeException is a checked exception.",
+            "You can have multiple catch blocks for one try block.",
+          ],
+          answers: ["Yes", "Yes", "No", "Yes"],
+        },
+        {
+          id: 54,
+          type: "dropdown",
+          prompt: "You are writing a method that reads a file. You must declare that this method may throw an IOException. How should you complete the method signature?",
+          template: [
+            { text: "public void readFile(String path) " },
+            { blank: 0, options: ["throws IOException","throw IOException","catches IOException","extends IOException"], answer: "throws IOException" },
+            { text: " {\n    // file reading code\n}" },
+          ],
+        },
+        {
+          id: 55,
+          type: "true-false",
+          prompt: "Select True or False for each statement about the Java exception hierarchy.",
+          rows: [
+            "Throwable is the parent class of both Error and Exception.",
+            "ArithmeticException is a checked exception.",
+            "IOException is an unchecked exception.",
+            "NullPointerException extends RuntimeException.",
+          ],
+          answers: ["True", "False", "False", "True"],
+        },
+        {
+          id: 56,
+          type: "multiple-choice",
+          prompt: "Which exception method returns the detail message string of the exception?",
+          options: ["getStackTrace()", "getMessage()", "getClass()", "getCause()"],
+          answer: 1,
+        },
+        {
+          id: 57,
+          type: "multiple-choice",
+          prompt: "Which exception occurs when an incorrect data type is entered or read by a Scanner?",
+          options: ["IOException", "ArithmeticException", "InputMismatchException", "NumberFormatException"],
+          answer: 2,
+        },
+        {
+          id: 58,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class ErrTest {\n    public static void main(String[] args) {\n        try {\n            String s = null;\n            System.out.println(s.length());\n        } catch (NullPointerException e) {\n            System.out.println("NPE caught");\n        } finally {\n            System.out.println("done");\n        }\n    }\n}`,
+          options: ["0 then done", "NPE caught then done", "NPE caught only", "done only"],
+          answer: 1,
+        },
+        {
+          id: 59,
+          type: "yes-no",
+          prompt: "For each scenario, select Yes if an exception will be thrown at runtime, or No if the code runs without exception.",
+          rows: [
+            "int[] arr = new int[3]; System.out.println(arr[3]);",
+            "int result = 10 / 2; System.out.println(result);",
+            "String s = null; int len = s.length();",
+            "int x = (int) 3.99; System.out.println(x);",
+          ],
+          answers: ["Yes", "No", "Yes", "No"],
+        },
+        {
+          id: 60,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class ThrowTest {\n    static void check(int age) {\n        if (age < 18) throw new IllegalArgumentException("Too young");\n        System.out.println("Allowed");\n    }\n    public static void main(String[] args) {\n        try { check(15); }\n        catch (IllegalArgumentException e) { System.out.println(e.getMessage()); }\n    }\n}`,
+          options: ["Allowed", "Too young", "IllegalArgumentException", "Compilation error"],
+          answer: 1,
+        },
+        {
+          id: 61,
+          type: "dropdown",
+          prompt: "The program must truncate firstName to its first five characters, then build an output string with firstName and its length. How should you complete the code?",
+          template: [
+            { text: "String firstName = \"Christopher\";\nfirstName = firstName." },
+            { blank: 0, options: ["substring(0,5)","substring(1,5)","charAt(5)","trim()"], answer: "substring(0,5)" },
+            { text: ";\nString output = String.format(\"%s is %d characters long.\", firstName, firstName." },
+            { blank: 1, options: ["length()","size()","count()","chars()"], answer: "length()" },
+            { text: ");\nSystem.out.println(output);" },
+          ],
+        },
+        {
+          id: 62,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class StrComp {\n    public static void main(String[] args) {\n        String a = new String("hello");\n        String b = new String("hello");\n        System.out.println(a == b);\n        System.out.println(a.equals(b));\n    }\n}`,
+          options: ["true and true", "false and true", "false and false", "true and false"],
+          answer: 1,
+        },
+        {
+          id: 63,
+          type: "true-false",
+          prompt: "Given: String s = \"Hello World\"; Select True or False for each String operation result.",
+          rows: [
+            "s.length() returns 11.",
+            "s.toUpperCase() returns HELLO WORLD.",
+            "s.substring(6) returns World.",
+            "s.indexOf('o') returns 7.",
+          ],
+          answers: ["True", "True", "True", "False"],
+        },
+        {
+          id: 64,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program? (Strings are immutable in Java)",
+          code: `public class StrImm {\n    public static void main(String[] args) {\n        String s = "Java";\n        s.concat(" Programming");\n        System.out.println(s);\n    }\n}`,
+          options: ["Java Programming", "Java", "Programming", "null"],
+          answer: 1,
+        },
+        {
+          id: 65,
+          type: "dropdown",
+          prompt: "The program must capitalize the first letter of firstName and make the remaining letters lowercase. How should you complete the code?",
+          template: [
+            { text: "String welcomeMsg = \"Welcome, \";\nwelcomeMsg += firstName." },
+            { blank: 0, options: ["substring(0,1).toUpperCase()","charAt(0).toUpperCase()","substring(1).toUpperCase()","toUpperCase()"], answer: "substring(0,1).toUpperCase()" },
+            { text: " + firstName." },
+            { blank: 1, options: ["substring(1).toLowerCase()","substring(0).toLowerCase()","toLowerCase()","substring(1,0).toLowerCase()"], answer: "substring(1).toLowerCase()" },
+            { text: ";\nreturn welcomeMsg;" },
+          ],
+        },
+        {
+          id: 66,
+          type: "true-false",
+          prompt: "Given: String s1 = \"hello\"; String s2 = s1; String s3 = s2; Select True or False for each statement.",
+          rows: [
+            "s1 and s2 refer to the same object in memory.",
+            "s2 and s3 refer to the same object in memory.",
+            "A different string can be assigned to s1 on a later line.",
+            "Calling s1.toUpperCase() changes the value of s1.",
+          ],
+          answers: ["True", "True", "True", "False"],
+        },
+        {
+          id: 67,
+          type: "multiple-choice",
+          prompt: "Given pi = Math.PI (3.141593), what does System.out.format(\"Pi is %09f\", pi) print?",
+          options: ["Pi is 3.141593", "Pi is 03.141593", "Pi is 3.1415930", "Pi is 003.141593"],
+          answer: 3,
+        },
+        {
+          id: 68,
+          type: "yes-no",
+          prompt: "Given: String region = \"\"; For each comparison, select Yes if the result is true, or No if it is false.",
+          rows: [
+            "region.isEmpty() returns true.",
+            "region == null returns true.",
+            "region.isNull() compiles without error.",
+            "region.equals(\"\") returns true.",
+          ],
+          answers: ["Yes", "No", "No", "Yes"],
+        },
+        {
+          id: 69,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class StrMeth {\n    public static void main(String[] args) {\n        String s = "  Java  ";\n        s = s.trim();\n        s = s.replace("Java", "Python");\n        System.out.println(s);\n    }\n}`,
+          options: ["  Python  ", "Python", "Java", "  Java  "],
+          answer: 1,
+        },
+        {
+          id: 70,
+          type: "true-false",
+          prompt: "Given: String msg = \"Hello World\"; Select True or False for each statement.",
+          rows: [
+            "msg.contains(\"World\") returns true.",
+            "msg.startsWith(\"hello\") returns true.",
+            "msg.endsWith(\"World\") returns true.",
+            "msg.charAt(0) returns H.",
+          ],
+          answers: ["True", "False", "True", "True"],
+        },
+        {
+          id: 71,
+          type: "multiple-choice",
+          prompt: "You are creating a method that processes invoices from an ArrayList. After each invoice is processed, you must remove it. Which method call correctly gets the ArrayList size?",
+          code: `for (int i = 0; i < invoices.____; i++) {\n    String invoice = invoices.get(i);\n    invoices.remove(i);\n}`,
+          options: ["length", "length()", "size", "size()"],
+          answer: 3,
+        },
+        {
+          id: 72,
+          type: "true-false",
+          prompt: "Review the ArrayList code. Select True or False for each statement.",
+          code: `ArrayList<String> list = new ArrayList<>();\nlist.add("A");\nlist.add("B");\nlist.add(0, "Z");\nSystem.out.println(list.size());  // line A\nSystem.out.println(list.get(0));  // line B`,
+          rows: [
+            "Line A prints 3.",
+            "Line B prints A.",
+            "list.add(0, Z) inserts Z at index 0.",
+            "ArrayList has a fixed size set at creation.",
+          ],
+          answers: ["True", "False", "True", "False"],
+        },
+        {
+          id: 73,
+          type: "multiple-choice",
+          prompt: "You have an ArrayList with 5 elements. You need to print the last element Central and then remove it. Which pair of lines is correct?",
+          code: `ArrayList<String> regions = new ArrayList<>();\nregions.add("North"); regions.add("South");\nregions.add("East"); regions.add("West"); regions.add("Central");`,
+          options: [
+            "System.out.println(regions.get(5)); regions.remove(5);",
+            "System.out.println(regions.get(4)); regions.remove(4);",
+            "System.out.println(regions.last()); regions.removeLast();",
+            "System.out.println(regions.get(4)); regions.delete(4);",
+          ],
+          answer: 1,
+        },
+        {
+          id: 74,
+          type: "yes-no",
+          prompt: "For each statement about ArrayList, select Yes if it is correct or No if it is not.",
+          rows: [
+            "ArrayList can store primitive types like int directly (without boxing).",
+            "ArrayList<Integer> can store Integer objects.",
+            "ArrayList.get(0) returns the first element.",
+            "ArrayList.remove(0) removes the first element.",
+          ],
+          answers: ["No", "Yes", "Yes", "Yes"],
+        },
+        {
+          id: 75,
+          type: "dropdown",
+          prompt: "You are working on a method to display all company regions from an ArrayList. How should you complete the iteration?",
+          template: [
+            { text: "ArrayList<String> regions = new ArrayList<>();\nregions.add(\"North\"); regions.add(\"South\");\nfor (" },
+            { blank: 0, options: ["String region : regions","int i = 0; i < regions.size(); i++","String region in regions","var region : regions"], answer: "String region : regions" },
+            { text: ") {\n    System.out.println(" },
+            { blank: 1, options: ["region","regions.get(region)","regions[region]","region.next()"], answer: "region" },
+            { text: ");\n}" },
+          ],
+        },
+        {
+          id: 76,
+          type: "dropdown",
+          prompt: "You are creating a Java console application. You need to read a birthdate entered by the user. How should you complete the code?",
+          template: [
+            { text: "import java.util.Scanner;\npublic class DataReader {\n    public static String getBirthdate() {\n        Scanner sc = new " },
+            { blank: 0, options: ["Scanner(System.in)","Scanner(System.out)","Scanner(stdin)","Reader(System.in)"], answer: "Scanner(System.in)" },
+            { text: ";\n        System.out.println(\"Enter your birthday in MM/DD/YYYY format:\");\n        String birthdate = sc." },
+            { blank: 1, options: ["next()","nextLine()","read()","nextString()"], answer: "next()" },
+            { text: ";\n        sc.close();\n        return birthdate;\n    }\n}" },
+          ],
+        },
+        {
+          id: 77,
+          type: "true-false",
+          prompt: "Review these statements about Java Scanner. Select True or False for each.",
+          rows: [
+            "Scanner.nextInt() reads the next integer token from input.",
+            "Scanner.nextLine() reads an entire line including spaces.",
+            "Scanner.next() reads the next complete token, stopping at whitespace.",
+            "new Scanner(System.in) reads from a file.",
+          ],
+          answers: ["True", "True", "True", "False"],
+        },
+        {
+          id: 78,
+          type: "multiple-choice",
+          prompt: "Given the input string: 1 Excellent 2 Good 3 Fair 4 Poor — what is the value of data3?",
+          code: `Scanner input = new Scanner("1 Excellent 2 Good 3 Fair 4 Poor");\nObject data1 = input.next();\nObject data2 = input.next();\nObject data3 = input.nextInt();\nObject data4 = input.nextInt();`,
+          options: ["2", "Good", "3", "Fair"],
+          answer: 0,
+        },
+        {
+          id: 79,
+          type: "dropdown",
+          prompt: "You are running a Java app that receives command-line inputs. You need to convert the first argument to a whole number. How should you complete the code?",
+          template: [
+            { text: "int amount = " },
+            { blank: 0, options: ["Integer","Double","String","Long"], answer: "Integer" },
+            { text: "." },
+            { blank: 1, options: ["parseInt","parseDouble","valueOf","intValue"], answer: "parseInt" },
+            { text: "(args[0]);" },
+          ],
+        },
+        {
+          id: 80,
+          type: "yes-no",
+          prompt: "A programmer declared: public double price = 39.99; For each statement, select Yes if it is true, or No if it is false.",
+          rows: [
+            "When converted to an int, the value is 39.",
+            "When converted to a byte, the value is 39.",
+            "When converted to a String using String.valueOf, the result is 39.99.",
+            "double uses more memory than float.",
+          ],
+          answers: ["Yes", "Yes", "Yes", "Yes"],
+        },
+        {
+          id: 81,
+          type: "multiple-choice",
+          prompt: "You need to convert a numeric String to a primitive double value. What code segment should you use?",
+          options: [
+            "Double.parseDouble(numberString);",
+            "Double.valueOf(numberString);",
+            "double.parseDouble(numberString);",
+            "String.parseDouble(numberString);",
+          ],
+          answer: 0,
+        },
+        {
+          id: 82,
+          type: "multiple-choice",
+          prompt: "Which access modifier allows a member to be accessed only within its own class?",
+          options: ["public", "protected", "default (package-private)", "private"],
+          answer: 3,
+        },
+        {
+          id: 83,
+          type: "true-false",
+          prompt: "Select True or False for each statement about Java access modifiers.",
+          rows: [
+            "public members are accessible from any class in any package.",
+            "protected members are accessible by subclasses in any package.",
+            "A method with no modifier is accessible from a different package.",
+            "private members are accessible only within the class they are declared.",
+          ],
+          answers: ["True", "True", "False", "True"],
+        },
+        {
+          id: 84,
+          type: "yes-no",
+          prompt: "Review the Customer class with private int id. For each change, select Yes if it compiles, or No if it does not.",
+          code: `public class Customer {\n    private int id = 3;\n    protected void showId() { System.out.println(id); }\n}`,
+          rows: [
+            "From outside the class: Customer c = new Customer(); c.id = 5; (same package)",
+            "From outside the class: Customer c = new Customer(); c.showId(); (same package)",
+            "Change id to public — then c.id = 5 compiles from outside.",
+            "Add this. inside showId() as this.id — it still compiles.",
+          ],
+          answers: ["No", "Yes", "Yes", "Yes"],
+        },
+        {
+          id: 85,
+          type: "multiple-choice",
+          prompt: "Which expression is the correct syntax for accessing a static method called calcTotal inside a class called CalcOrder?",
+          options: ["CalcOrder.calcTotal", "CalcOrder:calcTotal:", "CalcOrder.calcTotal()", "calcTotal()"],
+          answer: 2,
+        },
+        {
+          id: 86,
+          type: "true-false",
+          prompt: "Select True or False for each statement about static members in Java.",
+          rows: [
+            "A static method can be called without creating an instance of the class.",
+            "A static field is shared by all instances of the class.",
+            "A static method can access instance (non-static) fields directly.",
+            "The main method must be declared static.",
+          ],
+          answers: ["True", "True", "False", "True"],
+        },
+        {
+          id: 87,
+          type: "dropdown",
+          prompt: "You have a Java class named InsurancePolicy. You need to define a constant RATE accessible by any class without instantiating InsurancePolicy. How should you complete the code?",
+          template: [
+            { text: "public class InsurancePolicy {\n    " },
+            { blank: 0, options: ["public","private","protected","default"], answer: "public" },
+            { text: " " },
+            { blank: 1, options: ["static","final","abstract","volatile"], answer: "static" },
+            { text: " final double RATE = 0.0642;\n}" },
+          ],
+        },
+        {
+          id: 88,
+          type: "yes-no",
+          prompt: "Review the Pickle class. For each modified version, select Yes if it compiles and runs correctly, or No if it causes an error.",
+          code: `class Pickle {\n    boolean isPreserved = false;\n    private boolean isCreated = false;\n    void preserve() { isPreserved = true; }\n    public static void main(String[] args) {\n        Pickle pickle = new Pickle();\n        isCreated = true; // line 7\n        pickle.preserve();\n    }\n}`,
+          rows: [
+            "Original code — compiles without error.",
+            "Change line 7 to: pickle.isCreated = true;",
+            "Change line 7 to: Pickle.isCreated = true;",
+            "Change preserve() to public void preserve() — it still compiles.",
+          ],
+          answers: ["No", "No", "No", "Yes"],
+        },
+        {
+          id: 89,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class MathTest {\n    public static void main(String[] args) {\n        System.out.println(Math.max(15, 30));\n        System.out.println(Math.abs(-7));\n        System.out.println(Math.pow(2, 3));\n    }\n}`,
+          options: ["30, 7, 8.0", "15, -7, 6.0", "30, -7, 8.0", "15, 7, 8.0"],
+          answer: 0,
+        },
+        {
+          id: 90,
+          type: "multiple-choice",
+          prompt: "Given pi = Math.PI (3.141593), what does System.out.format(\"Pi is %.3f\", pi) print?",
+          options: ["Pi is 3.142", "Pi is 3.141", "Pi is 3.14", "Pi is 3.1416"],
+          answer: 0,
+        },
+        {
+          id: 91,
+          type: "multiple-choice",
+          prompt: "You are interviewing for a job at Adventure Works. The hiring manager asks you to create a program that writes command-line arguments to the screen in order. Which three code segments should you use?",
+          options: [
+            "main(String[] args) + for(int i=0;i<args.length;i++) + System.out.println(args[i])",
+            "main(String args) + for(int i=0;i<=args.length;i++) + System.out.println(args[i])",
+            "main(String[] args) + while(args.hasNext()) + System.out.println(args.next())",
+            "main(String args[]) + for(String a:args) + System.out.print(a)",
+          ],
+          answer: 0,
+        },
+        {
+          id: 92,
+          type: "dropdown",
+          prompt: "The program accepts command line arguments. You need to ensure the main method handles each argument. How should you complete the code?",
+          template: [
+            { text: "public static void main(String[] args) {\n    for (int i = 0; i < " },
+            { blank: 0, options: ["args.length","args.length - 1","args.size()","args.count"], answer: "args.length" },
+            { text: "; i++) {\n        handleArguments(" },
+            { blank: 1, options: ["args[i]","args.get(i)","args(i)","args.next()"], answer: "args[i]" },
+            { text: ");\n    }\n}" },
+          ],
+        },
+        {
+          id: 93,
+          type: "multiple-choice",
+          prompt: "You should use an int data type to store the numeric value 3,000,000,000 (3 billion). If this is incorrect, select the answer choice that corrects it.",
+          options: ["No change is needed.", "a short", "a long", "a byte"],
+          answer: 2,
+        },
+        {
+          id: 94,
+          type: "multiple-choice",
+          prompt: "Review the Logger class with a public void logError method. The statement says: The logError method can be invoked by code in all classes in the same package as Logger. Which answer accurately describes the accessibility?",
+          code: `class Logger {\n    public void logError(String message) { }\n}`,
+          options: [
+            "No change is needed — but the statement should say: by all classes in all packages.",
+            "only by the Logger class",
+            "only by Logger and its subclasses in any package",
+            "by all classes in all packages",
+          ],
+          answer: 3,
+        },
+        {
+          id: 95,
+          type: "yes-no",
+          prompt: "You are applying encapsulation to a BankAccount class. For each change, select Yes if it correctly applies encapsulation, or No if it does not.",
+          rows: [
+            "Making the balance field private.",
+            "Providing a public getBalance() method to read balance.",
+            "Making balance public so any class can update it directly.",
+            "Providing a public setBalance(double amount) method to change balance.",
+          ],
+          answers: ["Yes", "Yes", "No", "Yes"],
+        },
+        {
+          id: 96,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `class Animal { void speak() { System.out.println("..."); } }\nclass Dog extends Animal { void speak() { System.out.println("Woof"); } }\nclass Cat extends Animal { void speak() { System.out.println("Meow"); } }\npublic class Main {\n    static void makeSpeak(Animal a) { a.speak(); }\n    public static void main(String[] args) {\n        makeSpeak(new Dog());\n        makeSpeak(new Cat());\n    }\n}`,
+          options: ["... and ...", "Woof and Meow", "Dog and Cat", "Compilation error"],
+          answer: 1,
+        },
+        {
+          id: 97,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `class Vehicle {}\nclass Car extends Vehicle {}\npublic class Main {\n    public static void main(String[] args) {\n        Car c = new Car();\n        System.out.println(c instanceof Car);\n        System.out.println(c instanceof Vehicle);\n    }\n}`,
+          options: ["true and false", "false and true", "true and true", "false and false"],
+          answer: 2,
+        },
+        {
+          id: 98,
+          type: "multiple-choice",
+          prompt: "Which three values will be displayed in sequence when you run JavaProgram1? (The constructor runs when new JavaProgram1() is called on line 05)",
+          code: `public class JavaProgram1 {\n    int x = 25;\n    public static void main(String args[]) {\n        JavaProgram1 app = new JavaProgram1();\n        { int x = 5; }\n        { int x = 10; }\n        int x = 100;\n        System.out.println(x);\n        System.out.println(app.x);\n    }\n    public JavaProgram1() { int x = 1; System.out.println(x); }\n}`,
+          options: ["1, 100, 25", "25, 100, 1", "1, 25, 100", "100, 25, 1"],
+          answer: 0,
+        },
+        {
+          id: 99,
+          type: "true-false",
+          prompt: "Review the following code. Select True or False for each output statement.",
+          code: `char value1 = 97;\nSystem.out.println(value1);   // A\nlong value2 = 97;\nSystem.out.println(value2);   // B\nfloat value3 = new Float("-97.0");\nSystem.out.println(value3);   // C`,
+          rows: [
+            "Line A displays the letter a.",
+            "Line B displays the number 97.",
+            "Line C displays the number -97.0.",
+            "new Short(\"-97.0\") on a short variable would throw an exception.",
+          ],
+          answers: ["True", "True", "True", "True"],
+        },
+        {
+          id: 100,
+          type: "dropdown",
+          prompt: "You need to create a method that detects duplicate values in an int array and stops as soon as a duplicate is found. How should you complete the outer for-loop condition?",
+          template: [
+            { text: "public static boolean duplicate(int[] array) {\n    boolean isDuplicate = false;\n    for (int x = 0; x < " },
+            { blank: 0, options: ["array.length - 1","array.length","array.length + 1","array.size()"], answer: "array.length - 1" },
+            { text: "; x++) {\n        for (int y = x + 1; y < array.length; y++)\n            if (array[x] == array[y]) isDuplicate = true;\n        if (isDuplicate) break;\n    }\n    return isDuplicate;\n}" },
+          ],
+        },
+        {
+          id: 101,
+          type: "dropdown",
+          prompt: "The method must iterate a String array and return false if any element has more than 10 characters, otherwise return true. How should you complete the code?",
+          template: [
+            { text: "public boolean validateEntries(String[] entries) {\n    boolean allValidEntries = true;\n    " },
+            { blank: 0, options: ["for","while","do","if"], answer: "for" },
+            { text: " (String entry " },
+            { blank: 1, options: [":","in","=","->"], answer: ":" },
+            { text: " entries) {\n        if (entry.length() > 10) {\n            allValidEntries = false;\n            break;\n        }\n    }\n    return allValidEntries;\n}" },
+          ],
+        },
+        {
+          id: 102,
+          type: "dropdown",
+          prompt: "The method must display all numbers from start down to zero in decrements of one. How should you complete the code?",
+          template: [
+            { text: "public static void countdown(int start) {\n    for (int i = start; i " },
+            { blank: 0, options: [">= 0","> 0","!= 0","< start"], answer: ">= 0" },
+            { text: "; i" },
+            { blank: 1, options: ["--","++","-= 1","+= 1"], answer: "--" },
+            { text: ") {\n        System.out.print(i);\n    }\n}" },
+          ],
+        },
+        {
+          id: 103,
+          type: "multiple-choice",
+          prompt: "Which statement describes the value of anum at line 05?",
+          code: `01 public static void main(String args[]) {\n02   int anum = 55;\n03   for (int cnt = 0; cnt < 10; cnt++) {\n04     add(anum);\n05     System.out.println(anum);\n06   }\n07 }\n08 public static void add(int anum) {\n09   anum++;\n10 }`,
+          options: [
+            "When cnt is 9, the value of anum is 64.",
+            "When cnt is 9, the value of anum is 55.",
+            "When cnt is 0, the value of anum is 56.",
+            "The value of anum is always 0.",
+          ],
+          answer: 1,
+        },
+        {
+          id: 104,
+          type: "multiple-choice",
+          prompt: "Using the same code from Q103, which statement describes the value of cnt at line 09 (inside the add method)?",
+          options: [
+            "The value of cnt is 10.",
+            "The value of cnt is 0.",
+            "The variable cnt is out of scope.",
+            "The value of cnt is 9.",
+          ],
+          answer: 2,
+        },
+        {
+          id: 105,
+          type: "multiple-choice",
+          prompt: "You need to instantiate a class named DB and invoke a method named query. Which code is correct?",
+          options: [
+            "DB db = DB(); db.query();",
+            "DB db = new DB(); db.query();",
+            "new DB().query; db;",
+            "DB.query();",
+          ],
+          answer: 1,
+        },
+        {
+          id: 106,
+          type: "dropdown",
+          prompt: "You are working on a code block to assign customers to offices: South AND Texas = Dallas; North OR West = SLC; all others = Atlanta. Complete the missing operators.",
+          template: [
+            { text: "if (region.equals(\"South\") " },
+            { blank: 0, options: ["&&","||","!","=="], answer: "&&" },
+            { text: " state.equals(\"Texas\")) {\n    office = \"Dallas\";\n} else if (region.equals(\"North\") " },
+            { blank: 1, options: ["||","&&","!","=="], answer: "||" },
+            { text: " region.equals(\"West\")) {\n    office = \"SLC\";\n} else {\n    office = \"Atlanta\";\n}" },
+          ],
+        },
+        {
+          id: 107,
+          type: "multiple-choice",
+          prompt: "Examine the code. Which line of code will generate the output: Your total after taxes and licensing is 31800?",
+          code: `int amount = 29000;\ndouble tax = .06;\nint licensing = 1000;\nint subtotal = amount + licensing;\ndouble total = subtotal * tax + subtotal;`,
+          options: [
+            "System.out.print(\"...is \" + subtotal);",
+            "System.out.print(\"...is \" + total);",
+            "System.out.print(\"...is \" + amount);",
+            "System.out.print(\"...is \" + licensing);",
+          ],
+          answer: 1,
+        },
+        {
+          id: 108,
+          type: "yes-no",
+          prompt: "A programmer declared: public double price = 39.99; For each question, select Yes if the statement is true and No if it is false.",
+          rows: [
+            "When converted to an integer, the value is 40.",
+            "When converted to a byte, the value is 39.",
+            "When converted to a String, the value is 39.",
+          ],
+          answers: ["No", "Yes", "No"],
+        },
+        {
+          id: 109,
+          type: "dropdown",
+          prompt: "A junior developer wants to shade odd-numbered rows silver and even-numbered rows white. Fill in the missing operator and comparison.",
+          template: [
+            { text: "for (int i = 0; i < 20; i++) {\n    if (i " },
+            { blank: 0, options: ["%","*","/","+"], answer: "%" },
+            { text: " 2 " },
+            { blank: 1, options: ["== 1","== 0","!= 0","> 0"], answer: "== 1" },
+            { text: ") {\n        bgColor = \"silver\";\n    } else {\n        bgColor = \"white\";\n    }\n}" },
+          ],
+        },
+        {
+          id: 110,
+          type: "multiple-choice",
+          prompt: "You have a Java app CalcInterest that reads amount and rate from args. What two commands do you run to calculate interest on a $5000 loan at 6%?",
+          options: [
+            "Step 1: java CalcInterest.java  Step 2: javac CalcInterest 5000 .06",
+            "Step 1: javac CalcInterest.java  Step 2: java CalcInterest 5000 .06",
+            "Step 1: javac CalcInterest 5000 .06  Step 2: java CalcInterest.java",
+            "Step 1: run CalcInterest  Step 2: java CalcInterest.java 5000 .06",
+          ],
+          answer: 1,
+        },
+        {
+          id: 111,
+          type: "dropdown",
+          prompt: "You are building an area calculation for a circle. Add the correct mechanisms for capturing user input.",
+          template: [
+            { text: "import java.util." },
+            { blank: 0, options: ["Scanner","Reader","BufferedReader","Console"], answer: "Scanner" },
+            { text: ";\npublic class InputCircleArea {\n    public static void main(String[] args) {\n        Scanner radiusIn = new Scanner(" },
+            { blank: 1, options: ["System.in","System.out","stdin","new File()"], answer: "System.in" },
+            { text: ");\n        double radius = radiusIn.nextDouble();\n        System.out.println(CalcArea(radius));\n        radiusIn." },
+            { blank: 2, options: ["close()","stop()","exit()","end()"], answer: "close()" },
+            { text: ";\n    }\n}" },
+          ],
+        },
+        {
+          id: 112,
+          type: "true-false",
+          prompt: "Select True or False for each statement about the final keyword in Java.",
+          rows: [
+            "A final variable cannot be reassigned after initialization.",
+            "A final method can be overridden in a subclass.",
+            "A final class cannot be subclassed.",
+            "A final parameter in a method cannot be changed inside the method body.",
+          ],
+          answers: ["True", "False", "True", "True"],
+        },
+        {
+          id: 113,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class Factorial {\n    static int fact(int n) {\n        if (n <= 1) return 1;\n        return n * fact(n - 1);\n    }\n    public static void main(String[] args) {\n        System.out.println(fact(5));\n    }\n}`,
+          options: ["25", "120", "60", "24"],
+          answer: 1,
+        },
+        {
+          id: 114,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class SBTest {\n    public static void main(String[] args) {\n        StringBuilder sb = new StringBuilder("Java");\n        sb.append(" is");\n        sb.append(" fun");\n        System.out.println(sb.toString());\n    }\n}`,
+          options: ["Java", "Java is fun", "Java is", "Compilation error"],
+          answer: 1,
+        },
+        {
+          id: 115,
+          type: "yes-no",
+          prompt: "For each statement about Java wrapper classes, select Yes if it is correct or No if it is not.",
+          rows: [
+            "Integer.parseInt(\"42\") converts the String 42 to int 42.",
+            "Double.parseDouble(\"3.14\") converts the String 3.14 to double 3.14.",
+            "Integer.MAX_VALUE holds the maximum value for a long.",
+            "String.valueOf(100) converts the int 100 to the String 100.",
+          ],
+          answers: ["Yes", "Yes", "No", "Yes"],
+        },
+        {
+          id: 116,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class IntDiv {\n    public static void main(String[] args) {\n        int a = 7, b = 2;\n        System.out.println(a / b);\n        System.out.println(a % b);\n    }\n}`,
+          options: ["3.5 and 1", "3 and 1", "3.5 and 0.5", "4 and 1"],
+          answer: 1,
+        },
+        {
+          id: 117,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class ConcatTest {\n    public static void main(String[] args) {\n        String s = "Score: ";\n        int score = 95;\n        System.out.println(s + score);\n    }\n}`,
+          options: ["Score: score", "Score: 95", "Score:", "Compilation error"],
+          answer: 1,
+        },
+        {
+          id: 118,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class TernaryTest {\n    public static void main(String[] args) {\n        int x = 10;\n        String result = (x > 5) ? "big" : "small";\n        System.out.println(result);\n    }\n}`,
+          options: ["small", "big", "10", "Compilation error"],
+          answer: 1,
+        },
+        {
+          id: 119,
+          type: "true-false",
+          prompt: "Select True or False for each statement about Java logical operators.",
+          rows: [
+            "In an && expression, if the left side is false, the right side is not evaluated.",
+            "In an || expression, if the left side is true, the right side is not evaluated.",
+            "The ! operator reverses a boolean value.",
+            "&& has higher precedence than ||.",
+          ],
+          answers: ["True", "True", "True", "True"],
+        },
+        {
+          id: 120,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class NullTest {\n    public static void main(String[] args) {\n        String s = null;\n        if (s == null) {\n            System.out.println("null string");\n        } else {\n            System.out.println(s.length());\n        }\n    }\n}`,
+          options: ["0", "null string", "Compilation error", "NullPointerException"],
+          answer: 1,
+        },
+        {
+          id: 121,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `import java.util.*;\npublic class SortTest {\n    public static void main(String[] args) {\n        ArrayList<Integer> nums = new ArrayList<>(Arrays.asList(3,1,4,1,5));\n        Collections.sort(nums);\n        System.out.println(nums.get(0));\n    }\n}`,
+          options: ["3", "1", "5", "4"],
+          answer: 1,
+        },
+        {
+          id: 122,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class AccumTest {\n    public static void main(String[] args) {\n        int total = 0;\n        for (int i = 1; i <= 10; i++) total += i;\n        System.out.println(total);\n    }\n}`,
+          options: ["45", "55", "50", "100"],
+          answer: 1,
+        },
+        {
+          id: 123,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class MaxVal {\n    public static void main(String[] args) {\n        int[] nums = {3, 7, 2, 9, 5};\n        int max = nums[0];\n        for (int n : nums)\n            if (n > max) max = n;\n        System.out.println(max);\n    }\n}`,
+          options: ["3", "9", "5", "7"],
+          answer: 1,
+        },
+        {
+          id: 124,
+          type: "dropdown",
+          prompt: "The program must read words from user input and print each word on a separate line. How should you complete the code?",
+          template: [
+            { text: "java.util.Scanner input = new java.util.Scanner(System.in);\n" },
+            { blank: 0, options: ["while","for","do","if"], answer: "while" },
+            { text: " (input." },
+            { blank: 1, options: ["hasNext()","hasNextLine()","isEmpty()","hasMore()"], answer: "hasNext()" },
+            { text: ") {\n    System.out.println(input.next());\n}" },
+          ],
+        },
+        {
+          id: 125,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class ReturnTest {\n    static String grade(int score) {\n        if (score >= 90) return "A";\n        if (score >= 80) return "B";\n        if (score >= 70) return "C";\n        return "F";\n    }\n    public static void main(String[] args) {\n        System.out.println(grade(85));\n    }\n}`,
+          options: ["A", "B", "C", "F"],
+          answer: 1,
+        },
+        {
+          id: 126,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program? (The inner loop iterates each row BACKWARD)",
+          code: `char[][] chArray = {{'A','B','C'},{'D','E','F'},{'G','H','I'}};\nfor (int x = 0; x < chArray.length; x++)\n    for (int y = chArray[x].length - 1; y >= 0; y--)\n        System.out.print(chArray[x][y]);`,
+          options: ["ABCDEFGHI", "CBAFEDIHG", "IHGFEDCBA", "GHIDEFABC"],
+          answer: 1,
+        },
+        {
+          id: 127,
+          type: "multiple-choice",
+          prompt: "Which exception occurs when a file being read from does not exist?",
+          options: ["InputMismatchException", "ArithmeticException", "IOException", "NullPointerException"],
+          answer: 2,
+        },
+        {
+          id: 128,
+          type: "dropdown",
+          prompt: "You are creating a method that converts a string representation of a number into an actual number. The numbers include whole numbers and fractional numbers. How should you complete the code?",
+          template: [
+            { text: "public void convertStringToNumber(String numberAsString) {\n    " },
+            { blank: 0, options: ["double","int","float","long"], answer: "double" },
+            { text: " number = Double." },
+            { blank: 1, options: ["parseDouble","parseFloat","parseInt","valueOf"], answer: "parseDouble" },
+            { text: "(numberAsString);\n}" },
+          ],
+        },
+        {
+          id: 129,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class BoolTest {\n    public static void main(String[] args) {\n        boolean a = true, b = false;\n        System.out.println(a && b);\n        System.out.println(a || b);\n        System.out.println(!a);\n    }\n}`,
+          options: ["false, true, false", "true, true, false", "false, false, true", "true, false, true"],
+          answer: 0,
+        },
+        {
+          id: 130,
+          type: "true-false",
+          prompt: "Review the following type casting code. Select True or False for each statement.",
+          code: `double d = 2.667;\nint iNum = 0;\niNum = (int) d;`,
+          rows: [
+            "iNum has a value of 2 after the cast.",
+            "iNum has a value of 3 after the cast (rounded up).",
+            "The cast truncates (cuts off) the decimal part.",
+            "An exception is thrown when casting a double to an int.",
+          ],
+          answers: ["True", "False", "True", "False"],
+        },
+        {
+          id: 131,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class MathFloor {\n    public static void main(String[] args) {\n        System.out.println(Math.floor(3.9));\n        System.out.println(Math.ceil(3.1));\n    }\n}`,
+          options: ["4.0 and 4.0", "3.0 and 4.0", "4.0 and 3.0", "3.0 and 3.0"],
+          answer: 1,
+        },
+        {
+          id: 132,
+          type: "true-false",
+          prompt: "Given: ArrayList<String> list = new ArrayList<>(Arrays.asList(A, B, C)); Select True or False for each statement.",
+          rows: [
+            "list.contains(B) returns true.",
+            "list.indexOf(C) returns 2.",
+            "list.size() returns 4.",
+            "list.get(1) returns B.",
+          ],
+          answers: ["True", "True", "False", "True"],
+        },
+        {
+          id: 133,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class StaticTest {\n    static int count = 0;\n    static { count = 10; }\n    public static void main(String[] args) {\n        System.out.println(count);\n    }\n}`,
+          options: ["0", "10", "Compilation error", "null"],
+          answer: 1,
+        },
+        {
+          id: 134,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class FinalTest {\n    public static void main(String[] args) {\n        final int MAX = 100;\n        System.out.println(MAX);\n    }\n}`,
+          options: ["0", "100", "MAX", "Compilation error"],
+          answer: 1,
+        },
+        {
+          id: 135,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class SplitTest {\n    public static void main(String[] args) {\n        String csv = "Alice,Bob,Charlie";\n        String[] parts = csv.split(",");\n        System.out.println(parts.length);\n        System.out.println(parts[1]);\n    }\n}`,
+          options: ["2 and Alice", "3 and Bob", "3 and Alice", "2 and Bob"],
+          answer: 1,
+        },
+        {
+          id: 136,
+          type: "true-false",
+          prompt: "Select True or False for each statement about default methods in Java interfaces (Java 8+).",
+          rows: [
+            "A default method in an interface has a method body.",
+            "A class implementing the interface must override all default methods.",
+            "A default method can be overridden by the implementing class.",
+            "Default methods allow interfaces to add new functionality without breaking existing code.",
+          ],
+          answers: ["True", "False", "True", "True"],
+        },
+        {
+          id: 137,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class MultiCatch {\n    public static void main(String[] args) {\n        try {\n            int[] arr = new int[3];\n            arr[5] = 10;\n        } catch (ArrayIndexOutOfBoundsException e) {\n            System.out.println("Index error");\n        } catch (Exception e) {\n            System.out.println("General error");\n        }\n    }\n}`,
+          options: ["General error", "Index error", "Compilation error", "No output"],
+          answer: 1,
+        },
+        {
+          id: 138,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class ChainTest {\n    public static void main(String[] args) {\n        String result = "  Hello World  "\n            .trim().toLowerCase().replace("world", "java");\n        System.out.println(result);\n    }\n}`,
+          options: ["hello java", "Hello World", "  hello java  ", "hello world"],
+          answer: 0,
+        },
+        {
+          id: 139,
+          type: "true-false",
+          prompt: "Select True or False for each statement comparing while and do-while loops.",
+          rows: [
+            "A do-while loop always executes the body at least once.",
+            "A while loop may never execute its body if the condition is false initially.",
+            "A do-while loop checks the condition before executing the body.",
+            "Both while and do-while loops can use a break statement.",
+          ],
+          answers: ["True", "True", "False", "True"],
+        },
+        {
+          id: 140,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program? (Fields are not polymorphic — only methods are)",
+          code: `class Shape { String type = "Shape"; }\nclass Circle extends Shape { String type = "Circle"; }\npublic class Main {\n    public static void main(String[] args) {\n        Shape s = new Circle();\n        System.out.println(s.type);\n    }\n}`,
+          options: ["Circle", "Shape", "null", "Compilation error"],
+          answer: 1,
+        },
+        {
+          id: 141,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class EnumTest {\n    enum Day { MON, TUE, WED, THU, FRI }\n    public static void main(String[] args) {\n        Day d = Day.WED;\n        System.out.println(d);\n        System.out.println(d.ordinal());\n    }\n}`,
+          options: ["WED and 2", "WED and 3", "2 and WED", "Compilation error"],
+          answer: 0,
+        },
+        {
+          id: 142,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class ValTest {\n    public static void main(String[] args) {\n        int num = 42;\n        String s = String.valueOf(num);\n        System.out.println(s.length());\n        System.out.println(s.getClass().getSimpleName());\n    }\n}`,
+          options: ["2 and String", "42 and int", "2 and int", "42 and String"],
+          answer: 0,
+        },
+        {
+          id: 143,
+          type: "yes-no",
+          prompt: "For each array declaration, select Yes if it is valid Java syntax, or No if it causes a compilation error.",
+          rows: [
+            "int[] arr = {1, 2, 3};",
+            "int[] arr = new int[]{1, 2, 3};",
+            "int[] arr = new int[3]{1, 2, 3};",
+            "int arr[] = {1, 2, 3};",
+          ],
+          answers: ["Yes", "Yes", "No", "Yes"],
+        },
+        {
+          id: 144,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class PropTest {\n    static void risky() throws Exception {\n        throw new Exception("Oops");\n    }\n    public static void main(String[] args) {\n        try { risky(); }\n        catch (Exception e) { System.out.println(e.getMessage()); }\n    }\n}`,
+          options: ["Exception", "Oops", "risky()", "Compilation error"],
+          answer: 1,
+        },
+        {
+          id: 145,
+          type: "multiple-choice",
+          prompt: "Which of the following is true about interfaces in Java?",
+          options: [
+            "An interface can extend multiple interfaces.",
+            "A class can extend multiple interfaces.",
+            "An interface can have a constructor.",
+            "An interface cannot contain static methods.",
+          ],
+          answer: 0,
+        },
+        {
+          id: 146,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `class Counter {\n    static int count = 0;\n    Counter() { count++; }\n}\npublic class Main {\n    public static void main(String[] args) {\n        new Counter(); new Counter(); new Counter();\n        System.out.println(Counter.count);\n    }\n}`,
+          options: ["0", "1", "3", "Compilation error"],
+          answer: 2,
+        },
+        {
+          id: 147,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class TwoVarLoop {\n    public static void main(String[] args) {\n        int sum = 0;\n        for (int i = 0, j = 10; i < j; i++, j--) {\n            sum++;\n        }\n        System.out.println(sum);\n    }\n}`,
+          options: ["10", "5", "4", "6"],
+          answer: 1,
+        },
+        {
+          id: 148,
+          type: "true-false",
+          prompt: "Select True or False for each statement about Java collections.",
+          rows: [
+            "ArrayList is part of the java.util package.",
+            "LinkedList implements the List interface.",
+            "HashMap stores key-value pairs.",
+            "Set allows duplicate elements.",
+          ],
+          answers: ["True", "True", "True", "False"],
+        },
+        {
+          id: 149,
+          type: "multiple-choice",
+          prompt: "What is the output when you run the following program?",
+          code: `public class Chain {\n    int val;\n    Chain() { this(99); System.out.println("default"); }\n    Chain(int v) { val = v; System.out.println("param:" + v); }\n    public static void main(String[] args) { new Chain(); }\n}`,
+          options: ["default then param:99", "param:99 then default", "99 only", "Compilation error"],
+          answer: 1,
+        },
+        {
+          id: 150,
+          type: "true-false",
+          prompt: "Final review — select True or False for each Java statement.",
+          rows: [
+            "Java is a strongly typed language: every variable must have a declared type.",
+            "The JVM (Java Virtual Machine) executes bytecode, not source code directly.",
+            "Java supports multiple inheritance of classes (a class can extend two classes).",
+            "Garbage collection in Java automatically frees memory that is no longer referenced.",
+          ],
+          answers: ["True", "True", "False", "True"],
+        }
+      ];
+
+
+      // ============================================================
+      // STATE
+      // ============================================================
+      let currentQ = 0;
+      let userAnswers = {};
+      let studentName = "";
+
+      // ============================================================
+      // LOCAL STORAGE — persist progress across disconnects
+      // ============================================================
+      const STORAGE_KEY = "java_its_progress";
+
+      function saveProgress() {
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify({
+            studentName,
+            currentQ,
+            userAnswers,
+          }),
+        );
+      }
+
+      function loadProgress() {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          return raw ? JSON.parse(raw) : null;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function clearProgress() {
+        localStorage.removeItem(STORAGE_KEY);
+      }
+
+      // ============================================================
+      // ANTI-CHEAT
+      // ============================================================
+      let violations = 0;
+      let examActive = false;
+      const MAX_WARNINGS = 3;
+
+      const isMobile = /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
+
+      function enterFullscreen() {
+        if (isMobile) return; // mobile browsers don't support fullscreen
+        const el = document.documentElement;
+        if (el.requestFullscreen) el.requestFullscreen();
+        else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+      }
+
+      function exitFullscreenHandler() {
+        if (!examActive) return;
+        const isFullscreen =
+          document.fullscreenElement || document.webkitFullscreenElement;
+        if (!isFullscreen) recordViolation();
+      }
+
+      function recordViolation() {
+        if (!examActive) return;
+        violations++;
+        saveProgress();
+        const badge = document.getElementById("violation-badge");
+        badge.style.display = "block";
+        badge.textContent = `⚠ ${violations} violation${violations > 1 ? "s" : ""}`;
+        const overlay = document.getElementById("cheat-overlay");
+        const warnText = document.getElementById("warn-text");
+        warnText.textContent = `Warning ${violations} of ${MAX_WARNINGS}${violations >= MAX_WARNINGS ? " — your submission will be flagged." : ""}`;
+        overlay.classList.add("show");
+      }
+
+      function dismissWarning() {
+        document.getElementById("cheat-overlay").classList.remove("show");
+        enterFullscreen();
+      }
+
+      function startAntiCheat() {
+        examActive = true;
+        enterFullscreen();
+
+        // Tab visibility change
+        document.addEventListener("visibilitychange", () => {
+          if (document.hidden && examActive) recordViolation();
+        });
+
+        // Fullscreen exit
+        document.addEventListener("fullscreenchange", exitFullscreenHandler);
+        document.addEventListener(
+          "webkitfullscreenchange",
+          exitFullscreenHandler,
+        );
+      }
+
+      function stopAntiCheat() {
+        examActive = false;
+      }
+
+      // ============================================================
+      // SCREENS
+      // ============================================================
+      function showScreen(id) {
+        document
+          .querySelectorAll(".screen")
+          .forEach((s) => s.classList.remove("active"));
+        document.getElementById(id).classList.add("active");
+      }
+
+      function startExam() {
+        const nameInput = document.getElementById("student-name");
+        const nameError = document.getElementById("name-error");
+        const name = nameInput.value.trim();
+        if (!name) {
+          nameInput.classList.add("error");
+          nameError.style.display = "block";
+          nameInput.focus();
+          return;
+        }
+        nameInput.classList.remove("error");
+        nameError.style.display = "none";
+        studentName = name;
+        currentQ = 0;
+        userAnswers = {};
+        saveProgress();
+        launchExam();
+      }
+
+      function resumeExam(saved) {
+        studentName = saved.studentName;
+        currentQ = saved.currentQ;
+        userAnswers = saved.userAnswers;
+        launchExam();
+      }
+
+      function launchExam() {
+        violations = 0;
+        document.getElementById("violation-badge").style.display = "none";
+        showScreen("screen-question");
+        document.getElementById("nav-bar").classList.remove("hidden");
+        renderQuestion(currentQ);
+        updateHeader();
+        startAntiCheat();
+      }
+
+      function retakeExam() {
+        stopAntiCheat();
+        clearProgress();
+        violations = 0;
+        studentName = "";
+        document.getElementById("student-name").value = "";
+        document.getElementById("violation-badge").style.display = "none";
+        document.getElementById("nav-bar").classList.add("hidden");
+        showScreen("screen-start");
+      }
+
+      // On page load — check for saved progress
+      window.addEventListener("load", () => {
+        const saved = loadProgress();
+        if (saved && saved.studentName) {
+          const banner = document.getElementById("resume-banner");
+          document.getElementById("resume-name").textContent =
+            saved.studentName;
+          document.getElementById("resume-qnum").textContent =
+            `Question ${saved.currentQ + 1} of ${questions.length}`;
+          banner.style.display = "block";
+          document.getElementById("btn-resume").onclick = () =>
+            resumeExam(saved);
+          document.getElementById("btn-start-fresh").onclick = () => {
+            clearProgress();
+            banner.style.display = "none";
+          };
+        }
+      });
+
+      // ============================================================
+      // RENDER
+      // ============================================================
+      function renderQuestion(idx) {
+        const q = questions[idx];
+        const container = document.getElementById("question-container");
+        let html = `<div class="q-card">
+    <div class="q-label">Question ${idx + 1} of ${questions.length} &mdash; ${typeLabel(q.type)}</div>
+    <div class="q-text">${formatText(q.prompt)}</div>`;
+
+        if (q.code) html += `<pre>${escHtml(q.code)}</pre>`;
+        if (q.prefix)
+          html += `<p style="margin-bottom:8px;font-size:.9rem;color:var(--muted);">${escHtml(q.prefix)}</p>`;
+
+        if (q.type === "multiple-choice") {
+          html += renderMC(q, idx);
+        } else if (q.type === "true-false") {
+          html += renderTF(q, idx, "True", "False");
+        } else if (q.type === "yes-no") {
+          html += renderTF(q, idx, "Yes", "No");
+        } else if (q.type === "dropdown") {
+          html += renderDropdown(q, idx);
+        }
+
+        html += `</div>`;
+        container.innerHTML = html;
+
+        // Restore saved answer
+        if (userAnswers[idx] !== undefined) {
+          restoreAnswer(q, idx);
+        }
+
+        updateNavButtons(idx);
+      }
+
+      function typeLabel(t) {
+        return (
+          {
+            "multiple-choice": "Multiple Choice",
+            "true-false": "True / False",
+            "yes-no": "Yes / No",
+            dropdown: "Fill in the Blank",
+          }[t] || t
+        );
+      }
+
+      function formatText(txt) {
+        // backtick → code, newline → <br>
+        return escHtml(txt)
+          .replace(/`([^`]+)`/g, "<code>$1</code>")
+          .replace(/\n/g, "<br>");
+      }
+
+      function escHtml(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      function renderMC(q, idx) {
+        const saved = userAnswers[idx] !== undefined ? userAnswers[idx] : -1;
+        return q.options
+          .map(
+            (opt, i) =>
+              `<label class="mc-option${saved === i ? " selected" : ""}">
+      <input type="radio" name="mc_${idx}" value="${i}" onchange="saveMC(${idx}, ${i})" ${saved === i ? "checked" : ""}>
+      <span class="mc-label">${String.fromCharCode(65 + i)}.</span>
+      <span>${formatText(opt)}</span>
+    </label>`,
+          )
+          .join("");
+      }
+
+      function renderTF(q, idx, opt1, opt2) {
+        const saved = userAnswers[idx] || {};
+        let html = `<table class="tf-table"><thead><tr><th>Statement</th><th>${opt1}</th><th>${opt2}</th></tr></thead><tbody>`;
+        q.rows.forEach((row, r) => {
+          html += `<tr>
+      <td>${formatText(row)}</td>
+      <td><input type="radio" name="tf_${idx}_${r}" value="${opt1}" onchange="saveTF(${idx}, ${r}, '${opt1}')" ${saved[r] === opt1 ? "checked" : ""}></td>
+      <td><input type="radio" name="tf_${idx}_${r}" value="${opt2}" onchange="saveTF(${idx}, ${r}, '${opt2}')" ${saved[r] === opt2 ? "checked" : ""}></td>
+    </tr>`;
+        });
+        html += "</tbody></table>";
+        return html;
+      }
+
+      function renderDropdown(q, idx) {
+        const saved = userAnswers[idx] || {};
+        let blankCount = 0;
+        let html = '<div class="code-block-fill">';
+        q.template.forEach((part) => {
+          if (part.text !== undefined) {
+            html += escHtml(part.text).replace(/\n/g, "<br>");
+          } else {
+            const b = blankCount++;
+            const opts = part.options
+              .map(
+                (o) =>
+                  `<option value="${escHtml(o)}" ${saved[b] === o ? "selected" : ""}>${escHtml(o)}</option>`,
+              )
+              .join("");
+            html += `<select class="fill-select" onchange="saveDD(${idx}, ${b}, this.value)">
+        <option value="">-- select --</option>${opts}</select>`;
+          }
+        });
+        html += "</div>";
+        return html;
+      }
+
+      function restoreAnswer(q, idx) {
+        // Already handled inline during render
+      }
+
+      // ============================================================
+      // SAVE ANSWERS
+      // ============================================================
+      function saveMC(idx, val) {
+        userAnswers[idx] = val;
+        document.querySelectorAll(`.mc-option`).forEach((el, i) => {
+          el.classList.toggle("selected", i === val);
+        });
+        saveProgress();
+      }
+
+      function saveTF(idx, row, val) {
+        if (!userAnswers[idx]) userAnswers[idx] = {};
+        userAnswers[idx][row] = val;
+        saveProgress();
+      }
+
+      function saveDD(idx, blank, val) {
+        if (!userAnswers[idx]) userAnswers[idx] = {};
+        userAnswers[idx][blank] = val;
+        saveProgress();
+      }
+
+      // ============================================================
+      // NAV
+      // ============================================================
+      function updateNavButtons(idx) {
+        const btnPrev = document.getElementById("btn-prev");
+        const btnNext = document.getElementById("btn-next");
+        const navLabel = document.getElementById("nav-label");
+        btnPrev.disabled = idx === 0;
+        btnPrev.style.opacity = idx === 0 ? ".4" : "1";
+        if (idx === questions.length - 1) {
+          btnNext.textContent = "Submit Exam";
+          btnNext.classList.add("btn-primary");
+        } else {
+          btnNext.textContent = "Next →";
+        }
+        navLabel.textContent = `${idx + 1} / ${questions.length}`;
+      }
+
+      function updateHeader() {
+        const idx = currentQ;
+        document.getElementById("q-counter").textContent =
+          `${idx + 1} / ${questions.length}`;
+        const pct = (idx / questions.length) * 100;
+        document.getElementById("progress-bar").style.width = pct + "%";
+      }
+
+      function prevQ() {
+        if (currentQ > 0) {
+          currentQ--;
+          saveProgress();
+          renderQuestion(currentQ);
+          updateHeader();
+          window.scrollTo(0, 0);
+        }
+      }
+
+      function nextQ() {
+        if (currentQ < questions.length - 1) {
+          currentQ++;
+          saveProgress();
+          renderQuestion(currentQ);
+          updateHeader();
+          window.scrollTo(0, 0);
+        } else {
+          showResults();
+        }
+      }
+
+      // ============================================================
+      // SCORING & RESULTS
+      // ============================================================
+      function scoreQuestion(q, idx) {
+        const ans = userAnswers[idx];
+        if (q.type === "multiple-choice") {
+          if (ans === undefined) return { earned: 0, max: 1, correct: false };
+          return {
+            earned: ans === q.answer ? 1 : 0,
+            max: 1,
+            correct: ans === q.answer,
+          };
+        }
+        if (q.type === "true-false" || q.type === "yes-no") {
+          const saved = ans || {};
+          let earned = 0;
+          q.answers.forEach((a, i) => {
+            if (saved[i] === a) earned++;
+          });
+          return {
+            earned,
+            max: q.answers.length,
+            partial: earned > 0 && earned < q.answers.length,
+            correct: earned === q.answers.length,
+          };
+        }
+        if (q.type === "dropdown") {
+          const saved = ans || {};
+          let blanks = 0,
+            earned = 0;
+          q.template.forEach((part) => {
+            if (part.blank !== undefined) {
+              blanks++;
+              if (saved[part.blank] === part.answer) earned++;
+            }
+          });
+          return {
+            earned,
+            max: blanks,
+            partial: earned > 0 && earned < blanks,
+            correct: earned === blanks,
+          };
+        }
+        return { earned: 0, max: 1, correct: false };
+      }
+
+      function showResults() {
+        document.getElementById("nav-bar").classList.add("hidden");
+        showScreen("screen-results");
+        window.scrollTo(0, 0);
+
+        let totalEarned = 0,
+          totalMax = 0;
+        questions.forEach((q, i) => {
+          const s = scoreQuestion(q, i);
+          totalEarned += s.earned;
+          totalMax += s.max;
+        });
+        const pct = Math.round((totalEarned / totalMax) * 100);
+
+        const circle = document.getElementById("score-circle");
+        document.getElementById("score-pct").textContent = pct + "%";
+        document.getElementById("score-frac").textContent =
+          `${totalEarned} / ${totalMax} pts`;
+        document.getElementById("result-name").textContent = studentName;
+
+        let grade, msg;
+        if (pct >= 90) {
+          grade = "grade-A";
+          msg = "Excellent work! You're well prepared.";
+        } else if (pct >= 75) {
+          grade = "grade-B";
+          msg = "Good job! Review the missed items.";
+        } else if (pct >= 60) {
+          grade = "grade-C";
+          msg = "Keep studying — review the explanations below.";
+        } else {
+          grade = "grade-F";
+          msg = "More practice needed. Go through each answer carefully.";
+        }
+
+        circle.className = "score-circle " + grade;
+        document.getElementById("score-msg").textContent = msg;
+
+        stopAntiCheat();
+
+        // Review rendered immediately — score save happens in background
+        const rc = document.getElementById("review-container");
+        rc.innerHTML = questions.map((q, i) => buildReview(q, i)).join("");
+
+        // Save score to server (background — don't block the results view)
+        const saveStatus = document.getElementById("save-status");
+        saveStatus.textContent = "Saving score...";
+        saveStatus.style.color = "var(--muted)";
+        fetch("/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: studentName,
+            score: totalEarned,
+            total: totalMax,
+            percent: pct + "%",
+            violations,
+            batch: "Batch 4",
+          }),
+        })
+          .then((r) => r.json())
+          .then((data) => {
+            if (data.ok) {
+              saveStatus.textContent = "Score saved!";
+              saveStatus.style.color = "var(--success)";
+              clearProgress();
+            } else {
+              saveStatus.textContent = "Could not save score (server error).";
+              saveStatus.style.color = "var(--danger)";
+            }
+          })
+          .catch(() => {
+            saveStatus.textContent =
+              "Could not save score — server not running.";
+            saveStatus.style.color = "var(--danger)";
+          });
+      }
+
+      function buildReview(q, idx) {
+        const s = scoreQuestion(q, idx);
+        const ans = userAnswers[idx];
+
+        let badge;
+        if (s.correct) badge = '<span class="correct-badge">✓ Correct</span>';
+        else if (s.earned > 0)
+          badge = `<span class="partial-badge">~ Partial (${s.earned}/${s.max})</span>`;
+        else badge = '<span class="wrong-badge">✗ Incorrect</span>';
+
+        let qHtml = `<div class="q-card review-item">
+    <div class="q-label">Question ${idx + 1} &mdash; ${typeLabel(q.type)}</div>
+    ${badge}
+    <div class="q-text">${formatText(q.prompt)}</div>`;
+
+        if (q.code) qHtml += `<pre>${escHtml(q.code)}</pre>`;
+
+        // Correct answer display
+        if (q.type === "multiple-choice") {
+          qHtml += `<div class="answer-block"><strong>Correct Answer:</strong> ${String.fromCharCode(65 + q.answer)}. ${formatText(q.options[q.answer])}</div>`;
+          if (ans !== undefined && ans !== q.answer) {
+            qHtml += `<div class="answer-block your-answer-block"><strong>Your Answer:</strong> ${String.fromCharCode(65 + ans)}. ${formatText(q.options[ans])}</div>`;
+          }
+        } else if (q.type === "true-false" || q.type === "yes-no") {
+          const saved = ans || {};
+          const opt1 = q.type === "true-false" ? "True" : "Yes";
+          const opt2 = q.type === "true-false" ? "False" : "No";
+          let tbl = `<table class="tf-table" style="margin-top:8px;"><thead><tr><th>Statement</th><th>${opt1}</th><th>${opt2}</th><th>Correct</th><th>Yours</th></tr></thead><tbody>`;
+          q.rows.forEach((row, r) => {
+            const correct = q.answers[r];
+            const yours = saved[r] || "—";
+            const ok = yours === correct;
+            tbl += `<tr style="background:${ok ? "#f0fdf4" : "#fff5f5"}">
+        <td>${formatText(row)}</td>
+        <td style="text-align:center">${correct === opt1 ? "✓" : ""}</td>
+        <td style="text-align:center">${correct === opt2 ? "✓" : ""}</td>
+        <td style="text-align:center;color:var(--success);font-weight:600">${correct}</td>
+        <td style="text-align:center;color:${ok ? "var(--success)" : "var(--danger)"};font-weight:600">${yours}</td>
+      </tr>`;
+          });
+          tbl += "</tbody></table>";
+          qHtml += tbl;
+        } else if (q.type === "dropdown") {
+          const saved = ans || {};
+          let blankIdx = 0;
+          let correctCode = "",
+            yourCode = "";
+          q.template.forEach((part) => {
+            if (part.text !== undefined) {
+              correctCode += part.text;
+              yourCode += part.text;
+            } else {
+              const b = blankIdx++;
+              correctCode += `[${part.answer}]`;
+              const yours = saved[b] || "___";
+              yourCode += `[${yours}]`;
+            }
+          });
+          qHtml += `<div class="answer-block"><strong>Correct:</strong><pre style="margin:4px 0 0;background:none;">${escHtml(correctCode)}</pre></div>`;
+          if (!s.correct) {
+            qHtml += `<div class="answer-block your-answer-block"><strong>Your answers:</strong><pre style="margin:4px 0 0;background:none;">${escHtml(yourCode)}</pre></div>`;
+          }
+        }
+
+        qHtml += "</div>";
+        return qHtml;
+      }
+    </script>
+  </body>
+</html>
